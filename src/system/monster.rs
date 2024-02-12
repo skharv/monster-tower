@@ -1,3 +1,5 @@
+use std::iter::once;
+
 use bevy::prelude::*;
 use crate::component;
 
@@ -21,8 +23,8 @@ pub fn load(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     ) {
-    let monsters = MonsterHandle(asset_server.load("monsters.yaml"));
-    commands.insert_resource(monsters);
+    let monster_handle = MonsterHandle(asset_server.load("monsters.yaml"));
+    commands.insert_resource(monster_handle);
     commands.spawn(Camera2dBundle::default());
 }
 
@@ -32,11 +34,17 @@ pub fn generate(
     monster: Res<MonsterHandle>,
     mut monsters: ResMut<Assets<Monsters>>,
     ) {
-    warn!("{:?}", monster);
-    if let Some(monster) = monsters.remove(monster.0.id()) {
-        warn!("{:?}", monster);
-        for m in monster.monsters {
-            warn!("{:?}", m);
+    if let Some(monsters) = monsters.get(monster.0.clone()) {
+        for monster in &monsters.monsters {
+            commands.spawn((
+                Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
+                GlobalTransform::default(),
+                component::Health { current: monster.health, max: monster.health },
+                component::Attack { damage: monster.attack },
+                component::Armor { amount: monster.armor },
+                component::Name { name: monster.name.clone() },
+            ));
+            info!("{:?}", monster);
         }
     }
     let text = "text";

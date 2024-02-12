@@ -9,7 +9,7 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, monster::generate)
-            .add_systems(PreStartup, monster::load)
+            .add_systems(PreStartup, (monster::load, floor::setup))
             .add_systems(Update, floor::up_down)
         .add_plugins(YamlAssetPlugin::<monster::Monsters>::new(&["yaml"]));
     }

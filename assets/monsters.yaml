@@ -2,7 +2,7 @@ monsters:
   - name: "Fire Elemental"
     health: 50
     attack: 20
-    armor: 15
+    armor: 5
   - name: "Ghost"
     health: 25
     attack: 30
@@ -11,3 +11,7 @@ monsters:
     health: 150
     attack: 50
     armor: 20
+  - name: "Demon"
+    health: 100
+    attack: 75
+    armor: 15
