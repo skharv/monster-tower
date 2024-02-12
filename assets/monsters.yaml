@@ -1,0 +1,13 @@
+monsters:
+  - name: "Fire Elemental"
+    health: 50
+    attack: 20
+    armor: 15
+  - name: "Ghost"
+    health: 25
+    attack: 30
+    armor: 0
+  - name: "Golem"
+    health: 150
+    attack: 50
+    armor: 20
