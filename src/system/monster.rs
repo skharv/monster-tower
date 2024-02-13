@@ -1,68 +1,110 @@
-use std::iter::once;
-
-use bevy::prelude::*;
+use bevy::{prelude::*, render::view::visibility};
 use crate::component;
-
-#[derive(serde::Deserialize, Asset, TypePath, Debug)]
-pub struct Monsters {
-    pub monsters: Vec<Monster>
-}
 
 #[derive(serde::Deserialize, Asset, TypePath, Debug)]
 pub struct Monster {
     pub name: String,
+    pub sprite: String,
     pub health: i32,
     pub attack: i32,
     pub armor: i32,
 }
 
-#[derive(Resource, Debug)]
-pub struct MonsterHandle(Handle<Monsters>);
+pub fn get_monster_details(index : i32) -> Monster {
+    match index {
+        0 => Monster {
+            name: "Goblin".to_string(),
+            sprite: "goblin.png".to_string(),
+            health: 10,
+            attack: 5,
+            armor: 2,
+        },
+        1 => Monster {
+            name: "Orc".to_string(),
+            sprite: "orc.png".to_string(),
+            health: 20,
+            attack: 10,
+            armor: 5,
+        },
+        2 => Monster {
+            name: "Troll".to_string(),
+            sprite: "troll.png".to_string(),
+            health: 30,
+            attack: 15,
+            armor: 10,
+        },
+        3 => Monster {
+            name: "Dragon".to_string(),
+            sprite: "dragon.png".to_string(),
+            health: 50,
+            attack: 20,
+            armor: 15,
+        },
+        4 => Monster {
+            name: "Demon".to_string(),
+            sprite: "demon.png".to_string(),
+            health: 100,
+            attack: 50,
+            armor: 20,
+        },
+        5 => Monster {
+            name: "Devil".to_string(),
+            sprite: "devil.png".to_string(),
+            health: 200,
+            attack: 100,
+            armor: 50,
+        },
+        6 => Monster {
+            name: "FireElemental".to_string(),
+            sprite: "fireelemental.png".to_string(),
+            health: 500,
+            attack: 200,
+            armor: 100,
+        },
+        _ => Monster {
+            name: "Goblin".to_string(),
+            sprite: "goblin.png".to_string(),
+            health: 10,
+            attack: 5,
+            armor: 2,
+        },
+    }
+}
 
 pub fn load(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
     ) {
-    let monster_handle = MonsterHandle(asset_server.load("monsters.yaml"));
-    commands.insert_resource(monster_handle);
     commands.spawn(Camera2dBundle::default());
 }
 
 pub fn generate(
     mut commands: Commands,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     asset_server: Res<AssetServer>,
-    monster: Res<MonsterHandle>,
-    mut monsters: ResMut<Assets<Monsters>>,
     ) {
-    if let Some(monsters) = monsters.get(monster.0.clone()) {
-        for monster in &monsters.monsters {
-            commands.spawn((
-                Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
-                GlobalTransform::default(),
-                component::Health { current: monster.health, max: monster.health },
-                component::Attack { damage: monster.attack },
-                component::Armor { amount: monster.armor },
-                component::Name { name: monster.name.clone() },
-            ));
-            info!("{:?}", monster);
-        }
+    for i in 0..7 {
+        let monster = get_monster_details(i);
+        info!("Loading {:?}",monster.sprite);
+        let texture_handle = asset_server.load(monster.sprite);
+        let texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(256., 256.), 1, 1, None, None);
+        let texture_atlas_handle = texture_atlases.add(texture_atlas);
+
+        let id = commands.spawn(SpriteSheetBundle {
+            texture_atlas: texture_atlas_handle,
+            sprite: TextureAtlasSprite::new(0),
+            transform: Transform::from_xyz(0., 0., 1.),
+            visibility: Visibility::Hidden,
+            ..default()
+            }).id();
+        
+        commands.entity(id).insert((
+            component::Monster,
+            component::Name { name: monster.name },
+            component::Health { current: monster.health, max: monster.health },
+            component::Attack { damage: monster.attack },
+            component::Armor { amount: monster.armor },
+            component::Floor { current: i },
+        ));
     }
-    let text = "text";
-    commands.spawn((
-        TextBundle::from_section(
-                text, 
-                TextStyle {
-                    font: asset_server.load("Evil-Empire.otf"),
-                    font_size: 100.0,
-                    ..default()
-                },
-                )
-            .with_text_alignment(TextAlignment::Center)
-            .with_style(Style {
-                position_type: PositionType::Absolute,
-                bottom: Val::Px(5.0),
-                right: Val::Px(5.0),
-                ..default()
-            }), component::Floor{ current: 0 }
-            ));
 }
+

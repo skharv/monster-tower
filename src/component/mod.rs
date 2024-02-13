@@ -1,6 +1,12 @@
 use bevy::prelude::*;
 
 #[derive(Component)]
+pub struct Player;
+
+#[derive(Component)]
+pub struct Monster;
+
+#[derive(Component)]
 pub struct Floor {
     pub current: i32,
 }
@@ -24,4 +30,9 @@ pub struct Armor {
 #[derive(Component)]
 pub struct Name {
     pub name: String,
+}
+
+#[derive(Component)]
+pub struct Timer {
+    pub duration: f32,
 }

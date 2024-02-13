@@ -1,10 +1,11 @@
-use bevy::{audio::PlaybackMode, prelude::*};
+use bevy::{audio::PlaybackMode, prelude::*, transform::commands};
 
-use crate::component;
+use crate::{component, AppState};
 
 pub fn setup(
     mut commands: Commands,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut app_state: ResMut<NextState<AppState>>,
     asset_server: Res<AssetServer>
     ) {
     let texture_handle = asset_server.load("test.png");
@@ -18,10 +19,32 @@ pub fn setup(
         ..default()
     });
 
+    let text = "text";
+    commands.spawn((
+            TextBundle::from_section(
+                text, 
+                TextStyle {
+                    font: asset_server.load("Evil-Empire.otf"),
+                    font_size: 100.0,
+                    ..default()
+                },
+                )
+            .with_text_alignment(TextAlignment::Center)
+            .with_style(Style {
+                position_type: PositionType::Absolute,
+                bottom: Val::Px(5.0),
+                right: Val::Px(5.0),
+                ..default()
+            }),
+            component::Floor{ current: 0 },
+            component::Timer { duration: 5.0 },
+            ));
+    app_state.set(AppState::SelectFloor);
 }
 
 pub fn up_down(
     mut commands: Commands,
+    mut app_state: ResMut<NextState<AppState>>,
     asset_server: Res<AssetServer>,
     keys: Res<Input<KeyCode>>,
     mut query: Query<(&mut component::Floor, &mut Text)>,
@@ -38,6 +61,7 @@ pub fn up_down(
                     },
                     ..default()
                 });
+            app_state.set(AppState::OpenDoor);
         }
         if keys.just_pressed(KeyCode::J) {
             floor.current -= 1;
@@ -50,7 +74,40 @@ pub fn up_down(
                     },
                     ..default()
                 });
+            app_state.set(AppState::OpenDoor);
         }
         text.sections[0].value = floor.current.to_string();
+    }
+}
+
+pub fn open_door(
+    mut commands: Commands,
+    mut app_state: ResMut<NextState<AppState>>,
+    keys: Res<Input<KeyCode>>,
+    asset_server: Res<AssetServer>
+    ) {
+    if keys.just_pressed(KeyCode::Return) {
+        commands.spawn(
+            AudioBundle{
+                source: asset_server.load("teleport.ogg"),
+                settings: PlaybackSettings{
+                    mode: PlaybackMode::Once,
+                    ..default()
+                },
+                ..default()
+            });
+        app_state.set(AppState::Combat);
+    }
+    if keys.just_pressed(KeyCode::Escape) {
+        commands.spawn(
+            AudioBundle{
+                source: asset_server.load("teleport.ogg"),
+                settings: PlaybackSettings{
+                    mode: PlaybackMode::Once,
+                    ..default()
+                },
+                ..default()
+            });
+        app_state.set(AppState::SelectFloor);
     }
 }

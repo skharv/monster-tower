@@ -10,7 +10,9 @@ pub const HEIGHT: i32 = 1024;
 pub enum AppState {
     #[default]
     Start,
-    Game,
+    SelectFloor,
+    OpenDoor,
+    Combat,
     Win,
     Loss
 }
