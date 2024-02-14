@@ -5,8 +5,12 @@ use crate::component;
 
 pub fn enter_combat(
     mut monster_query: Query<(&mut Visibility, &component::Floor, &component::Name, &component::Health), With<component::Monster>>,
+    mut door_query: Query<&mut Visibility, (With<component::Door>, Without<component::Monster>)>,
     text_query: Query<&component::Floor, (With<Text>, Without<component::Monster>)>,
     ) {
+    let mut door_visibility = door_query.single_mut();
+    *door_visibility = Visibility::Hidden;
+
     for floor in text_query.iter() {
         for (mut monster_visibility, monster_floor, monster_name, monster_health) in monster_query.iter_mut() {
             if monster_floor.current != floor.current {
@@ -134,10 +138,22 @@ pub fn combat(
                     }
                     if monster_health.current <= 0 {
                         info!("You killed the {}", monster_name.name);
-                        app_state.set(AppState::SelectFloor);
+                        app_state.set(AppState::PostCombat);
                     }
                 }
             }
         }
+    }
+}
+
+pub fn post_combat(
+    keys: Res<Input<KeyCode>>,
+    mut app_state: ResMut<NextState<AppState>>,
+    mut door_query: Query<&mut Visibility, (With<component::Door>, Without<component::Monster>)>,
+    ) {
+    if keys.just_pressed(KeyCode::Return) {
+        app_state.set(AppState::SelectFloor);
+        let mut door_visibility = door_query.single_mut();
+        *door_visibility = Visibility::Visible;
     }
 }

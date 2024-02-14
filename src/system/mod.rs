@@ -64,6 +64,8 @@ impl Plugin for GamePlugin {
             .add_systems(Update, floor::up_down.run_if(in_state(AppState::SelectFloor)))
             .add_systems(Update, floor::open_door.run_if(in_state(AppState::OpenDoor)))
             .add_systems(Update, combat::combat.run_if(in_state(AppState::Combat)))
+            .add_systems(Update, combat::post_combat.run_if(in_state(AppState::PostCombat)))
+            .add_systems(Update, floor::move_floors.run_if(in_state(AppState::MoveFloor)))
             .add_systems(OnEnter(AppState::Combat), combat::enter_combat)
             .add_systems(OnExit(AppState::Combat), combat::exit_combat);
     }

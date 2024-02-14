@@ -8,6 +8,15 @@ pub struct Player;
 pub struct Monster;
 
 #[derive(Component)]
+pub struct Door;
+
+#[derive(Component)]
+pub struct FloorSelector;
+
+#[derive(Component)]
+pub struct FloorVisualizer;
+
+#[derive(Component)]
 pub struct Floor {
     pub current: i32,
 }

@@ -3,16 +3,18 @@ use bevy::{prelude::*, window::WindowResolution, asset::AssetMetaCheck};
 mod system;
 mod component;
 
-pub const WIDTH: i32 = 1024;
-pub const HEIGHT: i32 = 1024;
+pub const WIDTH: i32 = 800;
+pub const HEIGHT: i32 = 800;
 
 #[derive(Debug, Clone, Default, Eq, PartialEq, Hash, States)]
 pub enum AppState {
     #[default]
     Start,
     SelectFloor,
+    MoveFloor,
     OpenDoor,
     Combat,
+    PostCombat,
     Win,
     Loss
 }
