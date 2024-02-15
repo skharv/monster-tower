@@ -6,6 +6,8 @@ mod combat;
 mod floor;
 mod monster;
 mod player;
+mod reward;
+mod ui;
 
 #[derive(Debug)]
 pub enum DamageType {
@@ -38,22 +40,6 @@ pub struct Resistances {
     pub light: i32,
 }
 
-#[derive(Debug)]
-pub struct Reward {
-    pub name: String,
-    pub physical_resistance: i32,
-    pub magic_resistance: i32,
-    pub fire_resistance: i32,
-    pub ice_resistance: i32,
-    pub poison_resistance: i32,
-    pub lightning_resistance: i32,
-    pub dark_resistance: i32,
-    pub light_resistance: i32,
-    pub health: i32,
-    pub damage: i32,
-    pub armor: i32,
-    pub damage_type: DamageType,
-}
 
 pub struct GamePlugin;
 
@@ -66,6 +52,8 @@ impl Plugin for GamePlugin {
             .add_systems(Update, combat::combat.run_if(in_state(AppState::Combat)))
             .add_systems(Update, combat::post_combat.run_if(in_state(AppState::PostCombat)))
             .add_systems(Update, floor::move_floors.run_if(in_state(AppState::MoveFloor)))
+            .add_systems(OnEnter(AppState::OpenDoor), floor::set_and_show_description)
+            .add_systems(OnExit(AppState::OpenDoor), floor::hide_description)
             .add_systems(OnEnter(AppState::Combat), combat::enter_combat)
             .add_systems(OnExit(AppState::Combat), combat::exit_combat);
     }

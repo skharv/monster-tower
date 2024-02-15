@@ -63,6 +63,17 @@ pub struct Reward {
 }
 
 #[derive(Component)]
+pub struct Description {
+    pub descriptions: [String; 3],
+}
+
+#[derive(Component)]
+pub struct DescriptionText;
+
+#[derive(Component)]
+pub struct DescriptionBox;
+
+#[derive(Component)]
 pub struct Armor {
     pub amount: i32,
 }

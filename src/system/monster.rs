@@ -1,16 +1,18 @@
 use bevy::prelude::*;
 use crate::component;
-use crate::system::{DamageType, Attack, Resistances, Reward};
+use crate::system::{DamageType, Attack, Resistances, reward};
+use rand::Rng;
 
 #[derive(Asset, TypePath, Debug)]
 pub struct Monster {
     pub name: String,
     pub sprite: String,
+    pub sprite_size: Vec2,
     pub health: i32,
     pub attack: Attack,
     pub armor: i32,
     pub resistances: Resistances,
-    pub reward: Reward,
+    pub description: [String; 3],
 }
 
 pub fn get_monster_details(index : i32) -> Monster {
@@ -18,6 +20,7 @@ pub fn get_monster_details(index : i32) -> Monster {
         0 => Monster {
             name: "Goblin".to_string(),
             sprite: "goblin.png".to_string(),
+            sprite_size: Vec2::new(400., 400.),
             health: 10,
             attack: Attack {
                 damage: 5,
@@ -34,25 +37,16 @@ pub fn get_monster_details(index : i32) -> Monster {
                 dark: 0,
                 light: 0,
             },
-            reward: Reward {
-                name: "Tablet of Strength".to_string(),
-                physical_resistance: 10,
-                magic_resistance: 0,
-                fire_resistance: 0,
-                ice_resistance: 0,
-                poison_resistance: 0,
-                lightning_resistance: 0,
-                dark_resistance: 0,
-                light_resistance: 0,
-                health: 10,
-                damage: 5,
-                armor: 2,
-                damage_type: DamageType::Physical,
-            },
+            description: [
+                "A small, green creature with a big nose and pointy ears.".to_string(),
+                "It is wearing a dirty, brown tunic and carrying a small, wooden club.".to_string(),
+                "It looks at you with a mix of fear and anger.".to_string(),
+            ],
         },
         1 => Monster {
             name: "Orc".to_string(),
             sprite: "orc.png".to_string(),
+            sprite_size: Vec2::new(400., 400.),
             health: 20,
             attack: Attack {
                 damage: 10,
@@ -69,25 +63,16 @@ pub fn get_monster_details(index : i32) -> Monster {
                 dark: 0,
                 light: 0,
             },
-            reward: Reward {
-                name: "Ring of Fire".to_string(),
-                physical_resistance: 0,
-                magic_resistance: 0,
-                fire_resistance: 10,
-                ice_resistance: 0,
-                poison_resistance: 0,
-                lightning_resistance: 0,
-                dark_resistance: 0,
-                light_resistance: 0,
-                health: 0,
-                damage: 10,
-                armor: 0,
-                damage_type: DamageType::Fire,
-            },
+            description: [
+                "A large, green creature with a big nose and pointy ears.".to_string(),
+                "It is wearing a dirty, brown tunic and carrying a large, wooden club.".to_string(),
+                "It looks at you with a mix of fear and anger.".to_string(),
+            ],
         },
         2 => Monster {
             name: "Troll".to_string(),
             sprite: "troll.png".to_string(),
+            sprite_size: Vec2::new(400., 400.),
             health: 30,
             attack: Attack {
                 damage: 15,
@@ -104,26 +89,16 @@ pub fn get_monster_details(index : i32) -> Monster {
                 dark: 0,
                 light: 0,
             },
-            reward: Reward {
-                name: "Amulet of Ice".to_string(),
-                physical_resistance: 0,
-                magic_resistance: 0,
-                fire_resistance: 0,
-                ice_resistance: 20,
-                poison_resistance: 0,
-                lightning_resistance: 0,
-                dark_resistance: 0,
-                light_resistance: 0,
-                health: 0,
-                damage: 0,
-                armor: 5,
-                damage_type: DamageType::Ice,
-            },
-
+            description: [
+                "A huge, green creature with a big nose and pointy ears.".to_string(),
+                "It is wearing a dirty, brown tunic and carrying a large, wooden club.".to_string(),
+                "It looks at you with a mix of fear and anger.".to_string(),
+            ],
         },
         3 => Monster {
             name: "Dragon".to_string(),
             sprite: "dragon.png".to_string(),
+            sprite_size: Vec2::new(600., 600.),
             health: 50,
             attack: Attack {
                 damage: 25,
@@ -140,25 +115,16 @@ pub fn get_monster_details(index : i32) -> Monster {
                 dark: 0,
                 light: 0,
             },
-            reward: Reward {
-                name: "Crown of Fire".to_string(),
-                physical_resistance: 10,
-                magic_resistance: 0,
-                fire_resistance: 20,
-                ice_resistance: 0,
-                poison_resistance: 0,
-                lightning_resistance: 0,
-                dark_resistance: 0,
-                light_resistance: 0,
-                health: 0,
-                damage: 25,
-                armor: 10,
-                damage_type: DamageType::Fire,
-            },
+            description: [
+                "A huge, green creature with a big nose and pointy ears.".to_string(),
+                "It is wearing a dirty, brown tunic and carrying a large, wooden club.".to_string(),
+                "It looks at you with a mix of fear and anger.".to_string(),
+            ],
         },
         4 => Monster {
             name: "Demon".to_string(),
             sprite: "demon.png".to_string(),
+            sprite_size: Vec2::new(600., 600.),
             health: 100,
             attack: Attack {
                 damage: 50,
@@ -175,25 +141,16 @@ pub fn get_monster_details(index : i32) -> Monster {
                 dark: 50,
                 light: 0,
             },
-            reward: Reward {
-                name: "Cape of Darkness".to_string(),
-                physical_resistance: 0,
-                magic_resistance: 5,
-                fire_resistance: 0,
-                ice_resistance: 0,
-                poison_resistance: 0,
-                lightning_resistance: 0,
-                dark_resistance: 20,
-                light_resistance: 0,
-                health: 20,
-                damage: 0,
-                armor: 15,
-                damage_type: DamageType::Dark,
-            },
+            description: [
+                "A huge, green creature with a big nose and pointy ears.".to_string(),
+                "It is wearing a dirty, brown tunic and carrying a large, wooden club.".to_string(),
+                "It looks at you with a mix of fear and anger.".to_string(),
+            ],
         },
         5 => Monster {
             name: "Devil".to_string(),
             sprite: "devil.png".to_string(),
+            sprite_size: Vec2::new(600., 600.),
             health: 200,
             attack: Attack {
                 damage: 100,
@@ -210,25 +167,16 @@ pub fn get_monster_details(index : i32) -> Monster {
                 dark: 100,
                 light: 0,
             },
-            reward: Reward {
-                name: "Sword of Darkness".to_string(),
-                physical_resistance: 0,
-                magic_resistance: 10,
-                fire_resistance: 0,
-                ice_resistance: 0,
-                poison_resistance: 0,
-                lightning_resistance: 0,
-                dark_resistance: 30,
-                light_resistance: 0,
-                health: 30,
-                damage: 50,
-                armor: 20,
-                damage_type: DamageType::Dark,
-            },
+            description: [
+                "A huge, green creature with a big nose and pointy ears.".to_string(),
+                "It is wearing a dirty, brown tunic and carrying a large, wooden club.".to_string(),
+                "It looks at you with a mix of fear and anger.".to_string(),
+            ],
         },
         6 => Monster {
             name: "FireElemental".to_string(),
             sprite: "fireelemental.png".to_string(),
+            sprite_size: Vec2::new(600., 600.),
             health: 500,
             attack: Attack {
                 damage: 250,
@@ -245,25 +193,16 @@ pub fn get_monster_details(index : i32) -> Monster {
                 dark: 0,
                 light: 0,
             },
-            reward: Reward {
-                name: "Staff of Fire".to_string(),
-                physical_resistance: 0,
-                magic_resistance: 20,
-                fire_resistance: 50,
-                ice_resistance: 0,
-                poison_resistance: 0,
-                lightning_resistance: 0,
-                dark_resistance: 0,
-                light_resistance: 0,
-                health: 50,
-                damage: 100,
-                armor: 50,
-                damage_type: DamageType::Fire,
-            },
+            description: [
+                "A huge, green creature with a big nose and pointy ears.".to_string(),
+                "It is wearing a dirty, brown tunic and carrying a large, wooden club.".to_string(),
+                "It looks at you with a mix of fear and anger.".to_string(),
+            ],
         },
         _ => Monster {
             name: "Goblin".to_string(),
             sprite: "goblin.png".to_string(),
+            sprite_size: Vec2::new(400., 400.),
             health: 10,
             attack: Attack {
                 damage: 5,
@@ -280,21 +219,11 @@ pub fn get_monster_details(index : i32) -> Monster {
                 dark: 0,
                 light: 0,
             },
-            reward: Reward {
-                name: "Tablet of Strength".to_string(),
-                physical_resistance: 10,
-                magic_resistance: 0,
-                fire_resistance: 0,
-                ice_resistance: 0,
-                poison_resistance: 0,
-                lightning_resistance: 0,
-                dark_resistance: 0,
-                light_resistance: 0,
-                health: 10,
-                damage: 5,
-                armor: 2,
-                damage_type: DamageType::Physical,
-            },
+            description: [
+                "A small, green creature with a big nose and pointy ears.".to_string(),
+                "It is wearing a dirty, brown tunic and carrying a small, wooden club.".to_string(),
+                "It looks at you with a mix of fear and anger.".to_string(),
+            ],
         },
     }
 }
@@ -310,12 +239,16 @@ pub fn generate(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     asset_server: Res<AssetServer>,
     ) {
+    let mut rng = rand::thread_rng();
     for i in 0..7 {
         let monster = get_monster_details(i);
         info!("Loading {:?}",monster.sprite);
         let texture_handle = asset_server.load(monster.sprite);
-        let texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(256., 256.), 1, 1, None, None);
+        let texture_atlas = TextureAtlas::from_grid(texture_handle, monster.sprite_size, 1, 1, None, None);
         let texture_atlas_handle = texture_atlases.add(texture_atlas);
+
+        let reward_index = rng.gen_range(0..reward::REWARD_COUNT);
+        let reward = reward::get_reward(reward_index);
 
         let id = commands.spawn(SpriteSheetBundle {
             texture_atlas: texture_atlas_handle,
@@ -344,22 +277,25 @@ pub fn generate(
                 dark: monster.resistances.dark,
                 light: monster.resistances.light,
             },
-            component::Reward {
-                name: monster.reward.name,
-                physical_resistance: monster.reward.physical_resistance,
-                magic_resistance: monster.reward.magic_resistance,
-                fire_resistance: monster.reward.fire_resistance,
-                ice_resistance: monster.reward.ice_resistance,
-                poison_resistance: monster.reward.poison_resistance,
-                lightning_resistance: monster.reward.lightning_resistance,
-                dark_resistance: monster.reward.dark_resistance,
-                light_resistance: monster.reward.light_resistance,
-                health: monster.reward.health,
-                damage: monster.reward.damage,
-                armor: monster.reward.armor,
-                damage_type: monster.reward.damage_type,
+            component::Description {
+                descriptions: monster.description,
             },
             component::Floor { current: i },
+            component::Reward {
+                name: reward.name,
+                physical_resistance: reward.physical_resistance,
+                magic_resistance: reward.magic_resistance,
+                fire_resistance: reward.fire_resistance,
+                ice_resistance: reward.ice_resistance,
+                poison_resistance: reward.poison_resistance,
+                lightning_resistance: reward.lightning_resistance,
+                dark_resistance: reward.dark_resistance,
+                light_resistance: reward.light_resistance,
+                health: reward.health,
+                damage: reward.damage,
+                armor: reward.armor,
+                damage_type: reward.damage_type,
+            },
         ));
     }
 }

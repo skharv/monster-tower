@@ -1,4 +1,5 @@
-use bevy::{audio::PlaybackMode, prelude::*, transform::commands};
+use bevy::{audio::PlaybackMode, prelude::*, text::{BreakLineOn, Text2dBounds}, transform::commands};
+use rand::Rng;
 
 use crate::{component::{self, FloorSelector, FloorVisualizer}, AppState};
 
@@ -74,7 +75,8 @@ pub fn setup(
             }),
             component::Floor{ current: 0 },
             component::FloorSelector
-            ));
+     ));
+
     commands.spawn((
             TextBundle::from_section(
                 text, 
@@ -95,6 +97,43 @@ pub fn setup(
             component::Timer{ duration: ELEVATOR_SPEED },
             component::FloorVisualizer
             ));
+    let box_size = Vec2::new(600.0, 100.0);
+    let box_position = Vec2::new(0.0, -200.0);
+    commands.spawn(SpriteBundle {
+        sprite: Sprite {
+            color: Color::rgba(0.0, 0.0, 0.0, 0.75),
+            custom_size: Some(box_size),
+            ..default()
+        },
+        transform: Transform::from_xyz(box_position.x, box_position.y, 10.0),
+        visibility: Visibility::Hidden,
+        ..default()
+    })
+    .insert(component::DescriptionBox)
+    .with_children(|builder| {
+        builder.spawn(Text2dBundle {
+                text: Text {
+                    sections: vec![
+                        TextSection {
+                            value: "Press J to go down".to_string(),
+                            style: TextStyle {
+                                font: asset_server.load("Evil-Empire.otf"),
+                                font_size: 40.0,
+                                color: Color::WHITE,
+                            },
+                        }],
+                        alignment: TextAlignment::Center,
+                        linebreak_behavior: BreakLineOn::WordBoundary,
+                },
+                text_2d_bounds: Text2dBounds {
+                    size: box_size,
+                },
+                transform: Transform::from_translation(Vec3::Z),
+                ..default()
+        })
+        .insert(component::DescriptionText);
+    });
+
     app_state.set(AppState::SelectFloor);
 }
 
@@ -165,7 +204,6 @@ pub fn move_floors(
     }
 }
 
-
 pub fn open_door(
     mut commands: Commands,
     mut app_state: ResMut<NextState<AppState>>,
@@ -196,4 +234,31 @@ pub fn open_door(
             });
         app_state.set(AppState::SelectFloor);
     }
+}
+
+pub fn set_and_show_description(
+    mut box_query: Query<&mut Visibility, With<component::DescriptionBox>>,
+    mut text_query: Query<&mut Text, With<component::DescriptionText>>,
+    monster_query: Query<(&component::Description, &component::Floor), With<component::Monster>>,
+    floor_query: Query<&component::Floor, (Without<component::Monster>, With<component::FloorSelector>)>,
+    ) {
+    let mut rng = rand::thread_rng();
+    let mut box_visibility = box_query.single_mut();
+    let mut text = text_query.single_mut();
+    let floor = floor_query.single();
+    for (monster_description, monster_floor) in monster_query.iter() {
+        if monster_floor.current != floor.current {
+            continue;
+        }
+        *box_visibility = Visibility::Visible;
+        text.sections[0].value = monster_description.descriptions[rng.gen_range(0..3)].clone();
+    }
+}
+
+
+pub fn hide_description(
+    mut box_query: Query<&mut Visibility, With<component::DescriptionBox>>,
+    ) {
+    let mut box_visibility = box_query.single_mut();
+    *box_visibility = Visibility::Hidden;
 }

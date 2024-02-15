@@ -1,0 +1,85 @@
+use crate::system::DamageType;
+
+pub const REWARD_COUNT: i32 = 3;
+
+#[derive(Debug)]
+pub struct Reward {
+    pub name: String,
+    pub physical_resistance: i32,
+    pub magic_resistance: i32,
+    pub fire_resistance: i32,
+    pub ice_resistance: i32,
+    pub poison_resistance: i32,
+    pub lightning_resistance: i32,
+    pub dark_resistance: i32,
+    pub light_resistance: i32,
+    pub health: i32,
+    pub damage: i32,
+    pub armor: i32,
+    pub damage_type: DamageType,
+}
+
+pub fn get_reward(index: i32) -> Reward {
+    match index {
+        0 => Reward {
+            name: "Sword".to_string(),
+            physical_resistance: 0,
+            magic_resistance: 0,
+            fire_resistance: 0,
+            ice_resistance: 0,
+            poison_resistance: 0,
+            lightning_resistance: 0,
+            dark_resistance: 0,
+            light_resistance: 0,
+            health: 0,
+            damage: 5,
+            armor: 0,
+            damage_type: DamageType::Physical,
+        },
+        1 => Reward {
+            name: "Shield".to_string(),
+            physical_resistance: 0,
+            magic_resistance: 0,
+            fire_resistance: 0,
+            ice_resistance: 0,
+            poison_resistance: 0,
+            lightning_resistance: 0,
+            dark_resistance: 0,
+            light_resistance: 0,
+            health: 0,
+            damage: 0,
+            armor: 5,
+            damage_type: DamageType::Ignore,
+        },
+        2 => Reward {
+            name: "Potion".to_string(),
+            physical_resistance: 0,
+            magic_resistance: 0,
+            fire_resistance: 0,
+            ice_resistance: 0,
+            poison_resistance: 0,
+            lightning_resistance: 0,
+            dark_resistance: 0,
+            light_resistance: 0,
+            health: 5,
+            damage: 0,
+            armor: 0,
+            damage_type: DamageType::Ignore,
+        },
+        _ => Reward {
+            name: "Nothing".to_string(),
+            physical_resistance: 0,
+            magic_resistance: 0,
+            fire_resistance: 0,
+            ice_resistance: 0,
+            poison_resistance: 0,
+            lightning_resistance: 0,
+            dark_resistance: 0,
+            light_resistance: 0,
+            health: 0,
+            damage: 0,
+            armor: 0,
+            damage_type: DamageType::Ignore,
+        },
+    }
+}
