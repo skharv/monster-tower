@@ -1,9 +1,11 @@
-use bevy::{audio::PlaybackMode, prelude::*, text::{BreakLineOn, Text2dBounds}, transform::commands};
-use rand::Rng;
+use bevy::{audio::PlaybackMode, prelude::*};
 
 use crate::{component::{self, FloorSelector, FloorVisualizer}, AppState};
 
 pub const ELEVATOR_SPEED: f32 = 1.0;
+
+#[derive(Event)]
+pub struct SetFloor(pub i32);
 
 pub fn setup(
     mut commands: Commands,
@@ -56,83 +58,6 @@ pub fn setup(
         ..default()
     });
 
-    let text = "G";
-    commands.spawn((
-            TextBundle::from_section(
-                text, 
-                TextStyle {
-                    font: asset_server.load("Evil-Empire.otf"),
-                    font_size: 40.0,
-                    ..default()
-                },
-                )
-            .with_text_alignment(TextAlignment::Center)
-            .with_style(Style {
-                position_type: PositionType::Absolute,
-                bottom: Val::Px(310.0),
-                right: Val::Px(55.0),
-                ..default()
-            }),
-            component::Floor{ current: 0 },
-            component::FloorSelector
-     ));
-
-    commands.spawn((
-            TextBundle::from_section(
-                text, 
-                TextStyle {
-                    font: asset_server.load("Evil-Empire.otf"),
-                    font_size: 80.0,
-                    ..default()
-                },
-                )
-            .with_text_alignment(TextAlignment::Center)
-            .with_style(Style {
-                position_type: PositionType::Absolute,
-                top: Val::Px(15.0),
-                left: Val::Px(385.0),
-                ..default()
-            }),
-            component::Floor{ current: 0 },
-            component::Timer{ duration: ELEVATOR_SPEED },
-            component::FloorVisualizer
-            ));
-    let box_size = Vec2::new(600.0, 100.0);
-    let box_position = Vec2::new(0.0, -200.0);
-    commands.spawn(SpriteBundle {
-        sprite: Sprite {
-            color: Color::rgba(0.0, 0.0, 0.0, 0.75),
-            custom_size: Some(box_size),
-            ..default()
-        },
-        transform: Transform::from_xyz(box_position.x, box_position.y, 10.0),
-        visibility: Visibility::Hidden,
-        ..default()
-    })
-    .insert(component::DescriptionBox)
-    .with_children(|builder| {
-        builder.spawn(Text2dBundle {
-                text: Text {
-                    sections: vec![
-                        TextSection {
-                            value: "Press J to go down".to_string(),
-                            style: TextStyle {
-                                font: asset_server.load("Evil-Empire.otf"),
-                                font_size: 40.0,
-                                color: Color::WHITE,
-                            },
-                        }],
-                        alignment: TextAlignment::Center,
-                        linebreak_behavior: BreakLineOn::WordBoundary,
-                },
-                text_2d_bounds: Text2dBounds {
-                    size: box_size,
-                },
-                transform: Transform::from_translation(Vec3::Z),
-                ..default()
-        })
-        .insert(component::DescriptionText);
-    });
 
     app_state.set(AppState::SelectFloor);
 }
@@ -143,8 +68,13 @@ pub fn up_down(
     asset_server: Res<AssetServer>,
     keys: Res<Input<KeyCode>>,
     mut query: Query<(&mut component::Floor, &mut Text), With<FloorSelector>>,
+    mut door_query: Query<&mut Visibility, With<component::Door>>,
+    mut reader: EventReader<SetFloor>
     ) {
     for (mut floor, mut text) in query.iter_mut() {
+        for event in reader.read() {
+            floor.current += event.0;
+        }
         if keys.just_pressed(KeyCode::K) {
             floor.current += 1;
         }
@@ -152,6 +82,8 @@ pub fn up_down(
             floor.current -= 1;
         }
         if keys.just_pressed(KeyCode::Return) {
+            let mut door_visibility = door_query.single_mut();
+            *door_visibility = Visibility::Visible;
             commands.spawn(
                 AudioBundle{
                     source: asset_server.load("teleport.ogg"),
@@ -207,9 +139,25 @@ pub fn move_floors(
 pub fn open_door(
     mut commands: Commands,
     mut app_state: ResMut<NextState<AppState>>,
+    mut monster_query: Query<(&component::Floor, &component::Health), (With<component::Monster>, Without<component::FloorSelector>)>,
+    floor_query: Query<&component::Floor, (With<component::FloorSelector>, Without<component::Monster>)>,
+    mut door_query: Query<&mut Visibility, With<component::Door>>,
     keys: Res<Input<KeyCode>>,
     asset_server: Res<AssetServer>
     ) {
+    let mut door_visibility = door_query.single_mut();
+    let mut monster_alive = true;
+    for (monster_floor, health) in monster_query.iter_mut() {
+        let floor = floor_query.single();
+        if monster_floor.current != floor.current {
+            continue;
+        }
+        if health.current <= 0 {
+            monster_alive = false;
+            *door_visibility = Visibility::Hidden;
+            app_state.set(AppState::SelectFloor);
+        }
+    }
     if keys.just_pressed(KeyCode::Return) {
         commands.spawn(
             AudioBundle{
@@ -220,7 +168,11 @@ pub fn open_door(
                 },
                 ..default()
             });
-        app_state.set(AppState::Combat);
+        if monster_alive {
+            app_state.set(AppState::Combat);
+        } else {
+            app_state.set(AppState::SelectFloor);
+        }
     }
     if keys.just_pressed(KeyCode::Escape) {
         commands.spawn(
@@ -236,29 +188,3 @@ pub fn open_door(
     }
 }
 
-pub fn set_and_show_description(
-    mut box_query: Query<&mut Visibility, With<component::DescriptionBox>>,
-    mut text_query: Query<&mut Text, With<component::DescriptionText>>,
-    monster_query: Query<(&component::Description, &component::Floor), With<component::Monster>>,
-    floor_query: Query<&component::Floor, (Without<component::Monster>, With<component::FloorSelector>)>,
-    ) {
-    let mut rng = rand::thread_rng();
-    let mut box_visibility = box_query.single_mut();
-    let mut text = text_query.single_mut();
-    let floor = floor_query.single();
-    for (monster_description, monster_floor) in monster_query.iter() {
-        if monster_floor.current != floor.current {
-            continue;
-        }
-        *box_visibility = Visibility::Visible;
-        text.sections[0].value = monster_description.descriptions[rng.gen_range(0..3)].clone();
-    }
-}
-
-
-pub fn hide_description(
-    mut box_query: Query<&mut Visibility, With<component::DescriptionBox>>,
-    ) {
-    let mut box_visibility = box_query.single_mut();
-    *box_visibility = Visibility::Hidden;
-}

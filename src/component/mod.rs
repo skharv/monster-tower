@@ -5,10 +5,19 @@ use crate::system::DamageType;
 pub struct Player;
 
 #[derive(Component)]
+pub struct PlayerStatsText;
+
+#[derive(Component)]
 pub struct Monster;
 
 #[derive(Component)]
 pub struct Door;
+
+#[derive(Component)]
+pub struct UpButton;
+
+#[derive(Component)]
+pub struct DownButton;
 
 #[derive(Component)]
 pub struct FloorSelector;
