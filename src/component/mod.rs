@@ -8,6 +8,9 @@ pub struct Player;
 pub struct PlayerStatsText;
 
 #[derive(Component)]
+pub struct MonsterStatsText;
+
+#[derive(Component)]
 pub struct Monster;
 
 #[derive(Component)]
@@ -15,6 +18,63 @@ pub struct Door;
 
 #[derive(Component)]
 pub struct CombatUi;
+
+#[derive(Component)]
+pub struct PhysicalIcon;
+
+#[derive(Component)]
+pub struct FireIcon;
+
+#[derive(Component)]
+pub struct IceIcon;
+
+#[derive(Component)]
+pub struct PoisonIcon;
+
+#[derive(Component)]
+pub struct LightningIcon;
+
+#[derive(Component)]
+pub struct DarkIcon;
+
+#[derive(Component)]
+pub struct LightIcon;
+
+#[derive(Component)]
+pub struct WaitIcon;
+
+#[derive(Component)]
+pub struct DefendIcon;
+
+#[derive(Component)]
+pub struct Icon;
+
+#[derive(Component)]
+pub struct AttackButton;
+
+#[derive(Component)]
+pub struct FireballButton;
+
+#[derive(Component)]
+pub struct IceSpearButton;
+
+#[derive(Component)]
+pub struct ShockButton;
+
+#[derive(Component)]
+pub struct BlockButton;
+
+#[derive(Component)]
+pub struct InspectButton;
+
+#[derive(Component)]
+pub struct InspectUi;
+
+#[derive(Component)]
+pub struct Inspected;
+
+#[derive(Component)]
+pub struct GoButton;
 
 #[derive(Component)]
 pub struct UpButton;
@@ -96,7 +156,7 @@ pub struct Reward {
 
 #[derive(Component)]
 pub struct Description {
-    pub descriptions: [String; 3],
+    pub descriptions: [String; 5],
 }
 
 #[derive(Component)]
@@ -118,4 +178,9 @@ pub struct Name {
 #[derive(Component)]
 pub struct Timer {
     pub duration: f32,
+}
+
+#[derive(Component)]
+pub struct NextAction {
+    pub action: combat::ActionType,
 }
