@@ -1,4 +1,4 @@
-use crate::system::DamageType;
+use crate::system::combat::DamageType;
 
 pub const REWARD_COUNT: i32 = 3;
 

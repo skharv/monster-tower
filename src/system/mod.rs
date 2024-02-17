@@ -2,50 +2,18 @@ use bevy::prelude::*;
 
 use crate::AppState;
 
-mod combat;
+pub mod combat;
 mod floor;
 mod monster;
 mod player;
 mod reward;
 mod ui;
 
-#[derive(Debug)]
-pub enum DamageType {
-    Physical,
-    Magic,
-    Fire,
-    Ice,
-    Poison,
-    Lightning,
-    Dark,
-    Light,
-    Ignore
-}
-
-#[derive(Debug)]
-pub struct Attack {
-    pub damage: i32,
-    pub damage_type: DamageType,
-}
-
-#[derive(Debug)]
-pub struct Resistances {
-    pub physical: i32,
-    pub magic: i32,
-    pub fire: i32,
-    pub ice: i32,
-    pub poison: i32,
-    pub lightning: i32,
-    pub dark: i32,
-    pub light: i32,
-}
-
-
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (monster::generate, ui::setup_player_stats, ui::setup_elevator))
+        app.add_systems(Startup, (monster::generate, ui::setup_player_stats, ui::setup_elevator, ui::setup_combat))
             .add_systems(PreStartup, (monster::load, floor::setup, player::spawn))
             .add_systems(Update, floor::up_down.run_if(in_state(AppState::SelectFloor)))
             .add_systems(Update, ui::navigation_buttons.run_if(in_state(AppState::SelectFloor)))
@@ -56,8 +24,9 @@ impl Plugin for GamePlugin {
             .add_systems(Update, ui::update_player_stats)
             .add_systems(OnEnter(AppState::OpenDoor), ui::set_and_show_description)
             .add_systems(OnExit(AppState::OpenDoor), ui::hide_description)
-            .add_systems(OnEnter(AppState::Combat), combat::enter_combat)
-            .add_systems(OnExit(AppState::Combat), combat::exit_combat)
-            .add_event::<floor::SetFloor>();
+            .add_systems(OnEnter(AppState::Combat), (combat::enter_combat, ui::show_combat))
+            .add_systems(OnExit(AppState::Combat), (combat::exit_combat, ui::hide_combat))
+            .add_event::<floor::SetFloor>()
+            .add_event::<combat::ActionEvent>();
     }
 }

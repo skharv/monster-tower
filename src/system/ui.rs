@@ -1,6 +1,5 @@
-use bevy::input::mouse::MouseButtonInput;
 use bevy::prelude::*;
-use bevy::text::{BreakLineOn, Text2dBounds};
+use bevy::text::BreakLineOn;
 use rand::Rng;
 
 use crate::component;
@@ -100,37 +99,37 @@ pub fn setup_elevator(
         ..default()
     })
     .insert(component::DescriptionBox)
-    .with_children(|parent| {
-        parent.spawn(ButtonBundle {
-            style: Style {
-                position_type: PositionType::Absolute,
-                justify_content: JustifyContent::Start,
-                align_items: AlignItems::Start,
-                ..default()
-            },
-            background_color: BackgroundColor(STATS_BACKGROUND_COLOR),
-            ..default()
-        })
-        .with_children(|builder| {
-            builder.spawn(TextBundle {
-                text: Text {
-                    sections: vec![
-                        TextSection {
-                            value: text.to_string(),
-                            style: TextStyle {
-                                font: asset_server.load("Evil-Empire.otf"),
-                                font_size: 40.0,
-                                color: Color::WHITE,
-                            },
-                        }],
-                        alignment: TextAlignment::Center,
-                        linebreak_behavior: BreakLineOn::WordBoundary,
+        .with_children(|parent| {
+            parent.spawn(ButtonBundle {
+                style: Style {
+                    position_type: PositionType::Absolute,
+                    justify_content: JustifyContent::Start,
+                    align_items: AlignItems::Start,
+                    ..default()
                 },
+                background_color: BackgroundColor(STATS_BACKGROUND_COLOR),
                 ..default()
             })
-            .insert(component::DescriptionText);
+            .with_children(|builder| {
+                builder.spawn(TextBundle {
+                    text: Text {
+                        sections: vec![
+                            TextSection {
+                                value: text.to_string(),
+                                style: TextStyle {
+                                    font: asset_server.load("Evil-Empire.otf"),
+                                    font_size: 40.0,
+                                    color: Color::WHITE,
+                                },
+                            }],
+                            alignment: TextAlignment::Center,
+                            linebreak_behavior: BreakLineOn::WordBoundary,
+                    },
+                    ..default()
+                })
+                .insert(component::DescriptionText);
+            });
         });
-    });
 
     commands.spawn(NodeBundle {
         style: Style {
@@ -240,7 +239,7 @@ pub fn setup_player_stats(
     ) {
     let (health, armor, resistances) = player_query.single();
     let stats_string = format!("Health: {}\nArmor: {}\n\nResistances:\nPhysical: {}\nMagic: {}\nFire: {}\nIce: {}\nPoison: {}\nLightning: {}\nDark: {}\nLight: {}", 
-                               health.current, armor.amount, resistances.physical, resistances.magic, resistances.fire, resistances.ice, resistances.poison, resistances.lightning, resistances.dark, resistances.light);
+                               health.current, armor.amount, resistances.amount.physical, resistances.amount.magic, resistances.amount.fire, resistances.amount.ice, resistances.amount.poison, resistances.amount.lightning, resistances.amount.dark, resistances.amount.light);
     commands.spawn(NodeBundle {
         style: Style {
             position_type: PositionType::Absolute,
@@ -281,9 +280,180 @@ pub fn setup_player_stats(
                 },
                 ..default()
             })
-        .insert(component::PlayerStatsText);
+            .insert(component::PlayerStatsText);
         });
     });
+}
+
+pub fn setup_combat(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    ) {
+    commands.spawn(NodeBundle {
+        style: Style {
+            position_type: PositionType::Absolute,
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            grid_auto_flow: GridAutoFlow::Column,
+            flex_direction: FlexDirection::Column,
+            ..default()
+        },
+        visibility: Visibility::Hidden,
+        ..default()
+    }).insert(component::CombatUi)
+    .with_children(|parent| {
+        parent.spawn(ButtonBundle {
+            style: Style {
+                position_type: PositionType::Absolute,
+                width: Val::Px(100.0),
+                height: Val::Px(50.0),
+                border: UiRect::all(Val::Px(5.0)),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            border_color: BorderColor(Color::BLACK),
+            background_color: BackgroundColor(Color::RED),
+            ..default()
+        })
+        .with_children(|parent| {
+            parent.spawn(TextBundle {
+                text: Text {
+                    sections: vec![
+                        TextSection {
+                            value: "ATTACK".to_string(),
+                            style: TextStyle {
+                                font: asset_server.load("Evil-Empire.otf"),
+                                font_size: 18.0,
+                                color: Color::WHITE,
+                            },
+                        }
+                    ],
+                    alignment: TextAlignment::Center,
+                    linebreak_behavior: BreakLineOn::WordBoundary,
+                },
+                ..default()
+            });
+        });
+        parent.spawn(ButtonBundle {
+            style: Style {
+                position_type: PositionType::Absolute,
+                width: Val::Px(100.0),
+                height: Val::Px(50.0),
+                border: UiRect::all(Val::Px(5.0)),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                top: Val::Px(60.0),
+                ..default()
+            },
+            border_color: BorderColor(Color::BLACK),
+            background_color: BackgroundColor(Color::BLUE),
+            ..default()
+        })
+        .with_children(|parent| {
+            parent.spawn(TextBundle {
+                text: Text {
+                    sections: vec![
+                        TextSection {
+                            value: "FIREBALL".to_string(),
+                            style: TextStyle {
+                                font: asset_server.load("Evil-Empire.otf"),
+                                font_size: 18.0,
+                                color: Color::WHITE,
+                            },
+                        }
+                    ],
+                    alignment: TextAlignment::Center,
+                    linebreak_behavior: BreakLineOn::WordBoundary,
+                },
+                ..default()
+            });
+        });
+        parent.spawn(ButtonBundle {
+            style: Style {
+                position_type: PositionType::Absolute,
+                width: Val::Px(100.0),
+                height: Val::Px(50.0),
+                border: UiRect::all(Val::Px(5.0)),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                top: Val::Px(120.0),
+                ..default()
+            },
+            border_color: BorderColor(Color::BLACK),
+            background_color: BackgroundColor(Color::WHITE),
+            ..default()
+        })
+        .with_children(|parent| {
+            parent.spawn(TextBundle {
+                text: Text {
+                    sections: vec![
+                        TextSection {
+                            value: "ICE SPEAR".to_string(),
+                            style: TextStyle {
+                                font: asset_server.load("Evil-Empire.otf"),
+                                font_size: 18.0,
+                                color: Color::BLACK,
+                            },
+                        }
+                    ],
+                    alignment: TextAlignment::Center,
+                    linebreak_behavior: BreakLineOn::WordBoundary,
+                },
+                ..default()
+            });
+        });
+        parent.spawn(ButtonBundle {
+            style: Style {
+                position_type: PositionType::Absolute,
+                width: Val::Px(100.0),
+                height: Val::Px(50.0),
+                border: UiRect::all(Val::Px(5.0)),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                top: Val::Px(180.0),
+                ..default()
+            },
+            border_color: BorderColor(Color::BLACK),
+            background_color: BackgroundColor(Color::YELLOW),
+            ..default()
+        })
+        .with_children(|parent| {
+            parent.spawn(TextBundle {
+                text: Text {
+                    sections: vec![
+                        TextSection {
+                            value: "SHOCK".to_string(),
+                            style: TextStyle {
+                                font: asset_server.load("Evil-Empire.otf"),
+                                font_size: 18.0,
+                                color: Color::BLACK,
+                            },
+                        }
+                    ],
+                    alignment: TextAlignment::Center,
+                    linebreak_behavior: BreakLineOn::WordBoundary,
+                },
+                ..default()
+            });
+        });
+    });
+}
+
+pub fn show_combat(
+    mut box_query: Query<&mut Visibility, With<component::CombatUi>>,
+    ) {
+    let mut box_visibility = box_query.single_mut();
+    *box_visibility = Visibility::Visible;
+}
+
+pub fn hide_combat(
+    mut box_query: Query<&mut Visibility, With<component::CombatUi>>,
+    ) {
+    let mut box_visibility = box_query.single_mut();
+    *box_visibility = Visibility::Hidden;
 }
 
 pub fn update_player_stats(
@@ -293,7 +463,7 @@ pub fn update_player_stats(
     let (health, armor, resistances) = player_query.single();
     let mut text = text_query.single_mut();
     let stats_string = format!("Health: {}\nArmor: {}\n\nResistances:\nPhysical: {}\nMagic: {}\nFire: {}\nIce: {}\nPoison: {}\nLightning: {}\nDark: {}\nLight: {}", 
-                               health.current, armor.amount, resistances.physical, resistances.magic, resistances.fire, resistances.ice, resistances.poison, resistances.lightning, resistances.dark, resistances.light);
+                               health.current, armor.amount, resistances.amount.physical, resistances.amount.magic, resistances.amount.fire, resistances.amount.ice, resistances.amount.poison, resistances.amount.lightning, resistances.amount.dark, resistances.amount.light);
     text.sections[0].value = stats_string.to_string();
 }
 

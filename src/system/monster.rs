@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use crate::component;
-use crate::system::{DamageType, Attack, Resistances, reward};
+use crate::system::combat::{DamageType, Attack, Resistances};
+use crate::system::reward;
 use rand::Rng;
 
 #[derive(Asset, TypePath, Debug)]
@@ -267,16 +268,7 @@ pub fn generate(
                 damage_type: monster.attack.damage_type,
             },
             component::Armor { amount: monster.armor },
-            component::Resistance {
-                physical: monster.resistances.physical,
-                magic: monster.resistances.magic,
-                fire: monster.resistances.fire,
-                ice: monster.resistances.ice,
-                poison: monster.resistances.poison,
-                lightning: monster.resistances.lightning,
-                dark: monster.resistances.dark,
-                light: monster.resistances.light,
-            },
+            component::Resistance { amount: monster.resistances },
             component::Description {
                 descriptions: monster.description,
             },

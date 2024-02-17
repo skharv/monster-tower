@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::system::DamageType;
+use crate::system::combat;
 
 #[derive(Component)]
 pub struct Player;
@@ -12,6 +12,9 @@ pub struct Monster;
 
 #[derive(Component)]
 pub struct Door;
+
+#[derive(Component)]
+pub struct CombatUi;
 
 #[derive(Component)]
 pub struct UpButton;
@@ -37,21 +40,41 @@ pub struct Health {
 }
 
 #[derive(Component)]
+pub struct Mana {
+    pub max: i32,
+    pub current: i32,
+}
+
+#[derive(Component)]
 pub struct Attack {
     pub damage: i32,
-    pub damage_type: DamageType,
+    pub damage_type: combat::DamageType,
+}
+
+#[derive(Component)]
+pub struct Fireball {
+    pub damage: i32,
+    pub damage_type: combat::DamageType,
+    pub mana_cost: i32,
+}
+
+#[derive(Component)]
+pub struct IceSpear {
+    pub damage: i32,
+    pub damage_type: combat::DamageType,
+    pub mana_cost: i32,
+}
+
+#[derive(Component)]
+pub struct Shock {
+    pub damage: i32,
+    pub damage_type: combat::DamageType,
+    pub mana_cost: i32,
 }
 
 #[derive(Component)]
 pub struct Resistance {
-    pub physical: i32,
-    pub magic: i32,
-    pub fire: i32,
-    pub ice: i32,
-    pub poison: i32,
-    pub lightning: i32,
-    pub dark: i32,
-    pub light: i32,
+    pub amount: combat::Resistances
 }
 
 #[derive(Component)]
@@ -68,7 +91,7 @@ pub struct Reward {
     pub health: i32,
     pub damage: i32,
     pub armor: i32,
-    pub damage_type: DamageType,
+    pub damage_type: combat::DamageType,
 }
 
 #[derive(Component)]
