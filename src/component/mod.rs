@@ -1,11 +1,20 @@
 use bevy::prelude::*;
-use crate::system::combat;
+use crate::system::{combat, reward};
 
 #[derive(Component)]
 pub struct Player;
 
 #[derive(Component)]
+pub struct Title;
+
+#[derive(Component)]
 pub struct PlayerStatsText;
+
+#[derive(Component)]
+pub struct GameUi;
+
+#[derive(Component)]
+pub struct Win;
 
 #[derive(Component)]
 pub struct MonsterStatsText;
@@ -20,25 +29,13 @@ pub struct Door;
 pub struct CombatUi;
 
 #[derive(Component)]
+pub struct RewardUi;
+
+#[derive(Component)]
+pub struct RewardText;
+
+#[derive(Component)]
 pub struct PhysicalIcon;
-
-#[derive(Component)]
-pub struct FireIcon;
-
-#[derive(Component)]
-pub struct IceIcon;
-
-#[derive(Component)]
-pub struct PoisonIcon;
-
-#[derive(Component)]
-pub struct LightningIcon;
-
-#[derive(Component)]
-pub struct DarkIcon;
-
-#[derive(Component)]
-pub struct LightIcon;
 
 #[derive(Component)]
 pub struct WaitIcon;
@@ -53,16 +50,40 @@ pub struct Icon;
 pub struct AttackButton;
 
 #[derive(Component)]
+pub struct AttackButtonText;
+
+#[derive(Component)]
 pub struct FireballButton;
+
+#[derive(Component)]
+pub struct FireballButtonText;
 
 #[derive(Component)]
 pub struct IceSpearButton;
 
 #[derive(Component)]
+pub struct IceSpearButtonText;
+
+#[derive(Component)]
 pub struct ShockButton;
 
 #[derive(Component)]
+pub struct ShockButtonText;
+
+#[derive(Component)]
 pub struct BlockButton;
+
+#[derive(Component)]
+pub struct OpenButton;
+
+#[derive(Component)]
+pub struct CloseButton;
+
+#[derive(Component)]
+pub struct Loss;
+
+#[derive(Component)]
+pub struct BlockButtonText;
 
 #[derive(Component)]
 pub struct InspectButton;
@@ -139,19 +160,7 @@ pub struct Resistance {
 
 #[derive(Component)]
 pub struct Reward {
-    pub name: String,
-    pub physical_resistance: i32,
-    pub magic_resistance: i32,
-    pub fire_resistance: i32,
-    pub ice_resistance: i32,
-    pub poison_resistance: i32,
-    pub lightning_resistance: i32,
-    pub dark_resistance: i32,
-    pub light_resistance: i32,
-    pub health: i32,
-    pub damage: i32,
-    pub armor: i32,
-    pub damage_type: combat::DamageType,
+    pub reward: Option<reward::Reward>,
 }
 
 #[derive(Component)]

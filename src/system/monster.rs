@@ -2,7 +2,6 @@ use bevy::prelude::*;
 use crate::component;
 use crate::system::combat::{self, Attack, DamageType, Resistances};
 use crate::system::reward;
-use rand::Rng;
 use rand::seq::SliceRandom;
 
 #[derive(Asset, TypePath, Debug)]
@@ -23,14 +22,13 @@ pub fn get_monster_details(index : i32) -> Monster {
             name: "Goblin".to_string(),
             sprite: "goblin.png".to_string(),
             sprite_size: Vec2::new(400., 400.),
-            health: 10,
+            health: 50,
             attack: Attack {
-                damage: 5,
+                damage: 3,
                 damage_type: DamageType::Physical,
             },
             armor: 2,
             resistances: Resistances {
-                physical: -5,
                 magic: -10,
                 fire: 0,
                 ice: 0,
@@ -51,21 +49,20 @@ pub fn get_monster_details(index : i32) -> Monster {
             name: "Acid Sludge".to_string(),
             sprite: "acidsludge.png".to_string(),
             sprite_size: Vec2::new(400., 400.),
-            health: 20,
+            health: 60,
             attack: Attack {
-                damage: 10,
+                damage: 5,
                 damage_type: DamageType::Poison,
             },
-            armor: 10,
+            armor: 5,
             resistances: Resistances {
-                physical: 5,
                 magic: 0,
-                fire: 0,
+                fire: -20,
                 ice: 0,
                 poison: 50,
                 lightning: 0,
                 dark: 0,
-                light: 0,
+                light: -10,
             },
             description: [
                 "A noxious odor seeps from beneath the door, accompanied by the faint sound of sizzling.".to_string(),
@@ -79,14 +76,13 @@ pub fn get_monster_details(index : i32) -> Monster {
             name: "Troll".to_string(),
             sprite: "troll.png".to_string(),
             sprite_size: Vec2::new(400., 400.),
-            health: 30,
+            health: 100,
             attack: Attack {
-                damage: 15,
+                damage: 10,
                 damage_type: DamageType::Physical,
             },
-            armor: 10,
+            armor: 8,
             resistances: Resistances {
-                physical: 5,
                 magic: -10,
                 fire: 0,
                 ice: 0,
@@ -107,14 +103,13 @@ pub fn get_monster_details(index : i32) -> Monster {
             name: "Ice Snail".to_string(),
             sprite: "icesnail.png".to_string(),
             sprite_size: Vec2::new(400., 400.),
-            health: 50,
+            health: 110,
             attack: Attack {
-                damage: 25,
+                damage: 15,
                 damage_type: DamageType::Ice,
             },
             armor: 20,
             resistances: Resistances {
-                physical: 0,
                 magic: 0,
                 fire: -10,
                 ice: 50,
@@ -135,21 +130,20 @@ pub fn get_monster_details(index : i32) -> Monster {
             name: "Demon".to_string(),
             sprite: "demon.png".to_string(),
             sprite_size: Vec2::new(600., 600.),
-            health: 100,
+            health: 150,
             attack: Attack {
-                damage: 50,
+                damage: 20,
                 damage_type: DamageType::Dark,
             },
             armor: 20,
             resistances: Resistances {
-                physical: 0,
                 magic: 0,
-                fire: 0,
-                ice: 0,
+                fire: 50,
+                ice: -10,
                 poison: 0,
                 lightning: 0,
                 dark: 50,
-                light: 0,
+                light: -10,
             },
             description: [
                 "The air crackles with heat as you approach the door, and you catch a glimpse of flickering flames dancing in the darkness beyond.".to_string(),
@@ -163,21 +157,20 @@ pub fn get_monster_details(index : i32) -> Monster {
             name: "Ghost".to_string(),
             sprite: "ghost.png".to_string(),
             sprite_size: Vec2::new(600., 600.),
-            health: 200,
+            health: 100,
             attack: Attack {
                 damage: 100,
                 damage_type: DamageType::Dark,
             },
-            armor: 0,
+            armor: 50,
             resistances: Resistances {
-                physical: 100,
                 magic: -10,
                 fire: 0,
                 ice: 0,
-                poison: 0,
-                lightning: 0,
-                dark: 100,
-                light: 0,
+                poison: -10,
+                lightning: -10,
+                dark: 10,
+                light: -10,
             },
             description: [
                 "A cold chill envelops you as you approach the door, accompanied by the faint whisper of a disembodied voice.".to_string(),
@@ -191,17 +184,16 @@ pub fn get_monster_details(index : i32) -> Monster {
             name: "Fire Elemental".to_string(),
             sprite: "fireelemental.png".to_string(),
             sprite_size: Vec2::new(400., 400.),
-            health: 500,
+            health: 80,
             attack: Attack {
-                damage: 250,
+                damage: 15,
                 damage_type: DamageType::Fire,
             },
-            armor: 100,
+            armor: 10,
             resistances: Resistances {
-                physical: 0,
                 magic: 0,
-                fire: 100,
-                ice: 0,
+                fire: 50,
+                ice: -20,
                 poison: 0,
                 lightning: 0,
                 dark: 0,
@@ -219,19 +211,18 @@ pub fn get_monster_details(index : i32) -> Monster {
             name: "Thunderstone".to_string(),
             sprite: "thunderstone.png".to_string(),
             sprite_size: Vec2::new(400., 400.),
-            health: 100,
+            health: 150,
             attack: Attack {
-                damage: 250,
+                damage: 20,
                 damage_type: DamageType::Lightning,
             },
-            armor: 100,
+            armor: 50,
             resistances: Resistances {
-                physical: 0,
                 magic: 0,
-                fire: 100,
+                fire: 0,
                 ice: 0,
-                poison: 0,
-                lightning: 0,
+                poison: -10,
+                lightning: 20,
                 dark: 0,
                 light: 0,
             },
@@ -247,20 +238,19 @@ pub fn get_monster_details(index : i32) -> Monster {
             name: "Light Crystals".to_string(),
             sprite: "lightcrystals.png".to_string(),
             sprite_size: Vec2::new(400., 400.),
-            health: 100,
+            health: 90,
             attack: Attack {
-                damage: 250,
+                damage: 17,
                 damage_type: DamageType::Light,
             },
-            armor: 100,
+            armor: 10,
             resistances: Resistances {
-                physical: 0,
                 magic: 0,
-                fire: 100,
+                fire: 0,
                 ice: 0,
                 poison: 0,
                 lightning: 0,
-                dark: 0,
+                dark: -20,
                 light: 0,
             },
             description: [
@@ -275,16 +265,15 @@ pub fn get_monster_details(index : i32) -> Monster {
             name: "Mimic".to_string(),
             sprite: "mimic.png".to_string(),
             sprite_size: Vec2::new(400., 400.),
-            health: 100,
+            health: 70,
             attack: Attack {
-                damage: 250,
+                damage: 12,
                 damage_type: DamageType::Physical,
             },
-            armor: 100,
+            armor: 5,
             resistances: Resistances {
-                physical: 0,
-                magic: 0,
-                fire: 100,
+                magic: -5,
+                fire: 0,
                 ice: 0,
                 poison: 0,
                 lightning: 0,
@@ -305,12 +294,11 @@ pub fn get_monster_details(index : i32) -> Monster {
             sprite_size: Vec2::new(400., 400.),
             health: 100,
             attack: Attack {
-                damage: 250,
+                damage: 25,
                 damage_type: DamageType::Dark,
             },
             armor: 100,
             resistances: Resistances {
-                physical: 0,
                 magic: 0,
                 fire: 100,
                 ice: 0,
@@ -338,7 +326,6 @@ pub fn get_monster_details(index : i32) -> Monster {
             },
             armor: 2,
             resistances: Resistances {
-                physical: -5,
                 magic: -10,
                 fire: 0,
                 ice: 0,
@@ -371,16 +358,16 @@ pub fn generate(
     ) {
     let mut rng = rand::thread_rng();
     let mut index: Vec<i32> = (0..11).collect();
+    let mut reward_index: Vec<i32> = (0..reward::REWARD_COUNT).collect();
     index.shuffle(&mut rng);
+    reward_index.shuffle(&mut rng);
     for i in 0..11 {
         let monster = get_monster_details(index[i]);
-        info!("Loading {:?}",monster.sprite);
         let texture_handle = asset_server.load(monster.sprite);
         let texture_atlas = TextureAtlas::from_grid(texture_handle, monster.sprite_size, 1, 1, None, None);
         let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
-        let reward_index = rng.gen_range(0..reward::REWARD_COUNT);
-        let reward = reward::get_reward(reward_index);
+        let new_reward = reward::get_reward(reward_index[i]);
 
         let id = commands.spawn(SpriteSheetBundle {
             texture_atlas: texture_atlas_handle,
@@ -405,19 +392,7 @@ pub fn generate(
             },
             component::Floor { current: i as i32 },
             component::Reward {
-                name: reward.name,
-                physical_resistance: reward.physical_resistance,
-                magic_resistance: reward.magic_resistance,
-                fire_resistance: reward.fire_resistance,
-                ice_resistance: reward.ice_resistance,
-                poison_resistance: reward.poison_resistance,
-                lightning_resistance: reward.lightning_resistance,
-                dark_resistance: reward.dark_resistance,
-                light_resistance: reward.light_resistance,
-                health: reward.health,
-                damage: reward.damage,
-                armor: reward.armor,
-                damage_type: reward.damage_type,
+                reward: Some(new_reward),
             },
             component::NextAction {
                 action: combat::ActionType::Defend
@@ -426,3 +401,18 @@ pub fn generate(
     }
 }
 
+pub fn decolor_sprite(
+    mut query: Query<(&mut TextureAtlasSprite, &component::Monster)>,
+    time: Res<Time>,
+    ) {
+    for (mut sprite, _) in query.iter_mut() {
+        if sprite.color != Color::WHITE {
+            let mut sprite_color = sprite.color;
+            sprite_color.set_r((sprite.color.r() + time.delta_seconds() * 2.0).min(1.0));
+            sprite_color.set_g((sprite.color.g() + time.delta_seconds() * 2.0).min(1.0));
+            sprite_color.set_b((sprite.color.b() + time.delta_seconds() * 2.0).min(1.0));
+            sprite_color.set_a((sprite.color.a() + time.delta_seconds() * 2.0).min(1.0));
+            sprite.color = sprite_color;
+        }
+    }
+}

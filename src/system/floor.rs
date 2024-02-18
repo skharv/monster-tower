@@ -7,10 +7,18 @@ pub const ELEVATOR_SPEED: f32 = 1.0;
 #[derive(Event)]
 pub struct SetFloor(pub i32);
 
+#[derive(Event)]
+pub struct GoToFloor;
+
+#[derive(Event)]
+pub struct OpenDoor;
+
+#[derive(Event)]
+pub struct CloseDoor;
+
 pub fn setup(
     mut commands: Commands,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    mut app_state: ResMut<NextState<AppState>>,
     asset_server: Res<AssetServer>
     ) {
     let texture_handle = asset_server.load("dungeon_room.png");
@@ -57,31 +65,23 @@ pub fn setup(
         transform: Transform::from_xyz(0., 0., 3.),
         ..default()
     });
-
-
-    app_state.set(AppState::SelectFloor);
 }
 
 pub fn up_down(
     mut commands: Commands,
     mut app_state: ResMut<NextState<AppState>>,
     asset_server: Res<AssetServer>,
-    keys: Res<Input<KeyCode>>,
     mut query: Query<(&mut component::Floor, &mut Text), With<FloorSelector>>,
     mut door_query: Query<&mut Visibility, With<component::Door>>,
-    mut reader: EventReader<SetFloor>
+    mut reader: EventReader<SetFloor>,
+    mut go_reader: EventReader<GoToFloor>
     ) {
     for (mut floor, mut text) in query.iter_mut() {
         for event in reader.read() {
             floor.current += event.0;
+            floor.current = floor.current.clamp(0, 10);
         }
-        if keys.just_pressed(KeyCode::K) {
-            floor.current += 1;
-        }
-        if keys.just_pressed(KeyCode::J) {
-            floor.current -= 1;
-        }
-        if keys.just_pressed(KeyCode::Return) {
+        for _ in go_reader.read() {
             let mut door_visibility = door_query.single_mut();
             *door_visibility = Visibility::Visible;
             commands.spawn(
@@ -142,8 +142,9 @@ pub fn open_door(
     mut monster_query: Query<(&component::Floor, &component::Health), (With<component::Monster>, Without<component::FloorSelector>)>,
     floor_query: Query<&component::Floor, (With<component::FloorSelector>, Without<component::Monster>)>,
     mut door_query: Query<&mut Visibility, With<component::Door>>,
-    keys: Res<Input<KeyCode>>,
-    asset_server: Res<AssetServer>
+    asset_server: Res<AssetServer>,
+    mut open_event: EventReader<OpenDoor>,
+    mut close_event: EventReader<CloseDoor>,
     ) {
     let mut door_visibility = door_query.single_mut();
     let mut monster_alive = true;
@@ -158,7 +159,7 @@ pub fn open_door(
             app_state.set(AppState::SelectFloor);
         }
     }
-    if keys.just_pressed(KeyCode::Return) {
+    for _ in open_event.read() {
         commands.spawn(
             AudioBundle{
                 source: asset_server.load("teleport.ogg"),
@@ -174,7 +175,7 @@ pub fn open_door(
             app_state.set(AppState::SelectFloor);
         }
     }
-    if keys.just_pressed(KeyCode::Escape) {
+    for _ in close_event.read() {
         commands.spawn(
             AudioBundle{
                 source: asset_server.load("teleport.ogg"),

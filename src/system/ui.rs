@@ -2,13 +2,15 @@ use bevy::prelude::*;
 use bevy::text::BreakLineOn;
 use rand::Rng;
 
-use crate::component::{self, IceSpear, ShockButton};
+use crate::component;
 use crate::system::combat::{ActionEvent, ActionType};
-use crate::system::floor::{ELEVATOR_SPEED, SetFloor};
+use crate::system::floor::{ELEVATOR_SPEED, SetFloor, GoToFloor, OpenDoor, CloseDoor};
 
 const DIRECTION_BUTTON_COLOR: Color = Color::rgb(0.5, 0.0, 0.5);
 const DIRECTION_HIGHLIGHT_COLOR: Color = Color::rgb(0.75, 0.25, 0.75);
 const STATS_BACKGROUND_COLOR: Color = Color::rgba(0.0, 0.0, 0.0, 0.7);
+const GO_BUTTON_COLOR: Color = Color::rgb(0.0, 0.75, 0.0);
+const GO_HIGHLIGHT_COLOR: Color = Color::rgb(0.0, 1.0, 0.0);
 
 pub fn setup_elevator(
     mut commands: Commands,
@@ -26,8 +28,10 @@ pub fn setup_elevator(
             right: Val::Px(-335.0),
             ..default()
         },
+        visibility: Visibility::Hidden,
         ..default()
     })
+    .insert(component::GameUi)
     .with_children(|parent| {
         parent.spawn(ButtonBundle {
             style: Style {
@@ -66,26 +70,42 @@ pub fn setup_elevator(
         });
     });
 
-    commands.spawn((
-            TextBundle::from_section(
-                text, 
-                TextStyle {
-                    font: asset_server.load("Evil-Empire.otf"),
-                    font_size: 80.0,
-                    ..default()
+    commands.spawn(NodeBundle {
+        style: Style {
+            position_type: PositionType::Absolute,
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            align_items: AlignItems::Start,
+            justify_content: JustifyContent::Center,
+            top: Val::Px(15.0),
+            ..default()
+        },
+        visibility: Visibility::Hidden,
+        ..default()
+    })
+        .insert(component::GameUi)
+        .with_children(|parent| {
+            parent.spawn(TextBundle {
+                text: Text {
+                    sections: vec![
+                        TextSection {
+                            value: "G".to_string(),
+                            style: TextStyle {
+                                font: asset_server.load("Evil-Empire.otf"),
+                                font_size: 80.0,
+                                color: Color::WHITE,
+                            },
+                        }
+                    ],
+                    alignment: TextAlignment::Center,
+                    linebreak_behavior: BreakLineOn::WordBoundary,
                 },
-                )
-            .with_text_alignment(TextAlignment::Center)
-            .with_style(Style {
-                position_type: PositionType::Absolute,
-                top: Val::Px(15.0),
-                left: Val::Px(385.0),
                 ..default()
-            }),
-            component::Floor{ current: 0 },
-            component::Timer{ duration: ELEVATOR_SPEED },
-            component::FloorVisualizer
-            ));
+            })
+            .insert(component::Floor{ current: 0 })
+            .insert(component::Timer{ duration: ELEVATOR_SPEED })
+            .insert(component::FloorVisualizer);
+        });
 
     commands.spawn(NodeBundle {
         style: Style {
@@ -130,7 +150,77 @@ pub fn setup_elevator(
                 })
                 .insert(component::DescriptionText);
             });
+        parent.spawn(ButtonBundle {
+            style: Style {
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                border: UiRect::all(Val::Px(5.0)),
+                bottom: Val::Px(200.0),
+                left: Val::Px(150.0),
+                width: Val::Px(200.0),
+                height: Val::Px(100.0),
+                ..default()
+            },
+            background_color: BackgroundColor(Color::GRAY),
+            border_color: BorderColor(Color::BLACK),
+            ..default()
+        })
+        .insert(component::OpenButton)
+        .with_children(|builder| {
+            builder.spawn(TextBundle {
+                text: Text {
+                    sections: vec![
+                        TextSection {
+                            value: "Open Door".to_string(),
+                            style: TextStyle {
+                                font: asset_server.load("Evil-Empire.otf"),
+                                font_size: 40.0,
+                                color: Color::WHITE,
+                            },
+                        }],
+                        alignment: TextAlignment::Center,
+                        linebreak_behavior: BreakLineOn::WordBoundary,
+                },
+                ..default()
+            });
         });
+        parent.spawn(ButtonBundle {
+            style: Style {
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                border: UiRect::all(Val::Px(5.0)),
+                bottom: Val::Px(200.0),
+                right: Val::Px(150.0),
+                width: Val::Px(200.0),
+                height: Val::Px(100.0),
+                ..default()
+            },
+            background_color: BackgroundColor(Color::GRAY),
+            border_color: BorderColor(Color::BLACK),
+            ..default()
+        })
+        .insert(component::CloseButton)
+        .with_children(|builder| {
+            builder.spawn(TextBundle {
+                text: Text {
+                    sections: vec![
+                        TextSection {
+                            value: "Keep Door Closed".to_string(),
+                            style: TextStyle {
+                                font: asset_server.load("Evil-Empire.otf"),
+                                font_size: 30.0,
+                                color: Color::WHITE,
+                            },
+                        }],
+                        alignment: TextAlignment::Center,
+                        linebreak_behavior: BreakLineOn::WordBoundary,
+                },
+                ..default()
+            });
+        });
+    });
 
     commands.spawn(NodeBundle {
         style: Style {
@@ -143,8 +233,10 @@ pub fn setup_elevator(
             right: Val::Px(-335.0),
             ..default()
         },
+        visibility: Visibility::Hidden,
         ..default()
     })
+    .insert(component::GameUi)
     .with_children(|parent| {
         parent.spawn(ButtonBundle {
             style: Style {
@@ -193,8 +285,10 @@ pub fn setup_elevator(
             right: Val::Px(-335.0),
             ..default()
         },
+        visibility: Visibility::Hidden,
         ..default()
     })
+    .insert(component::GameUi)
     .with_children(|parent| {
         parent.spawn(ButtonBundle {
             style: Style {
@@ -243,8 +337,10 @@ pub fn setup_elevator(
             right: Val::Px(-335.0),
             ..default()
         },
+        visibility: Visibility::Hidden,
         ..default()
     })
+    .insert(component::GameUi)
     .with_children(|parent| {
         parent.spawn(ButtonBundle {
             style: Style {
@@ -286,11 +382,11 @@ pub fn setup_elevator(
 pub fn setup_player_stats(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    player_query: Query<(&component::Health, &component::Armor, &component::Resistance), With<component::Player>>,
+    player_query: Query<(&component::Health, &component::Mana, &component::Armor, &component::Resistance), With<component::Player>>,
     ) {
-    let (health, armor, resistances) = player_query.single();
-    let stats_string = format!("Health: {}\nArmor: {}\n\nResistances:\nPhysical: {}\nMagic: {}\nFire: {}\nIce: {}\nPoison: {}\nLightning: {}\nDark: {}\nLight: {}", 
-                               health.current, armor.amount, resistances.amount.physical, resistances.amount.magic, resistances.amount.fire, resistances.amount.ice, resistances.amount.poison, resistances.amount.lightning, resistances.amount.dark, resistances.amount.light);
+    let (health, mana, armor, resistances) = player_query.single();
+    let stats_string = format!("Health: {}/{}\nMana: {}/{}\nArmor: {}\n\nResistances:\nMagic: {}\nFire: {}\nIce: {}\nPoison: {}\nLightning: {}\nDark: {}\nLight: {}", 
+                               health.current, health.max, mana.current, mana.max, armor.amount, resistances.amount.magic, resistances.amount.fire, resistances.amount.ice, resistances.amount.poison, resistances.amount.lightning, resistances.amount.dark, resistances.amount.light);
     commands.spawn(NodeBundle {
         style: Style {
             position_type: PositionType::Absolute,
@@ -301,8 +397,10 @@ pub fn setup_player_stats(
             margin: UiRect::all(Val::Px(5.0)),
             ..default()
         },
+        visibility: Visibility::Hidden,
         ..default()
     })
+    .insert(component::GameUi)
     .with_children(|parent| {
         parent.spawn(ButtonBundle {
             style: Style {
@@ -350,8 +448,8 @@ pub fn setup_monster_stats(
         if floor.current != current_floor.current {
             continue;
         }
-    let stats_string = format!("{}\nHealth: {}\nArmor: {}\n\nDamage: {}\nDamageType:\n{}\n\nResistances:\nPhysical: {}\nMagic: {}\nFire: {}\nIce: {}\nPoison: {}\nLightning: {}\nDark: {}\nLight: {}", 
-                               name.name, health.current, armor.amount, attack.damage, attack.damage_type, resistances.amount.physical, resistances.amount.magic, resistances.amount.fire, resistances.amount.ice, resistances.amount.poison, resistances.amount.lightning, resistances.amount.dark, resistances.amount.light);
+    let stats_string = format!("{}\nHealth: {}/{}\nArmor: {}\n\nDamage: {}\nDamageType:\n{}\n\nResistances:\nMagic: {}\nFire: {}\nIce: {}\nPoison: {}\nLightning: {}\nDark: {}\nLight: {}", 
+                               name.name, health.current, health.max, armor.amount, attack.damage, attack.damage_type, resistances.amount.magic, resistances.amount.fire, resistances.amount.ice, resistances.amount.poison, resistances.amount.lightning, resistances.amount.dark, resistances.amount.light);
     commands.spawn(NodeBundle {
         style: Style {
             position_type: PositionType::Absolute,
@@ -414,9 +512,9 @@ pub fn setup_combat(
             position_type: PositionType::Absolute,
             width: Val::Percent(100.0),
             height: Val::Percent(100.0),
-            align_items: AlignItems::Start,
-            justify_content: JustifyContent::End,
-            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::End,
+            justify_content: JustifyContent::Center,
+            flex_direction: FlexDirection::Row,
             bottom: Val::Px(5.0),
             ..default()
         },
@@ -427,7 +525,7 @@ pub fn setup_combat(
         parent.spawn(ButtonBundle {
             style: Style {
                 width: Val::Px(100.0),
-                height: Val::Px(50.0),
+                height: Val::Px(80.0),
                 border: UiRect::all(Val::Px(5.0)),
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
@@ -456,12 +554,13 @@ pub fn setup_combat(
                     linebreak_behavior: BreakLineOn::WordBoundary,
                 },
                 ..default()
-            });
+            })
+            .insert(component::AttackButtonText);
         });
         parent.spawn(ButtonBundle {
             style: Style {
                 width: Val::Px(100.0),
-                height: Val::Px(50.0),
+                height: Val::Px(80.0),
                 border: UiRect::all(Val::Px(5.0)),
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
@@ -490,12 +589,13 @@ pub fn setup_combat(
                     linebreak_behavior: BreakLineOn::WordBoundary,
                 },
                 ..default()
-            });
+            })
+            .insert(component::FireballButtonText);
         });
         parent.spawn(ButtonBundle {
             style: Style {
                 width: Val::Px(100.0),
-                height: Val::Px(50.0),
+                height: Val::Px(80.0),
                 border: UiRect::all(Val::Px(5.0)),
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
@@ -524,12 +624,13 @@ pub fn setup_combat(
                     linebreak_behavior: BreakLineOn::WordBoundary,
                 },
                 ..default()
-            });
+            })
+            .insert(component::IceSpearButtonText);
         });
         parent.spawn(ButtonBundle {
             style: Style {
                 width: Val::Px(100.0),
-                height: Val::Px(50.0),
+                height: Val::Px(80.0),
                 border: UiRect::all(Val::Px(5.0)),
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
@@ -558,12 +659,13 @@ pub fn setup_combat(
                     linebreak_behavior: BreakLineOn::WordBoundary,
                 },
                 ..default()
-            });
+            })
+            .insert(component::ShockButtonText);
         });
         parent.spawn(ButtonBundle {
             style: Style {
                 width: Val::Px(100.0),
-                height: Val::Px(50.0),
+                height: Val::Px(80.0),
                 border: UiRect::all(Val::Px(5.0)),
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
@@ -592,12 +694,13 @@ pub fn setup_combat(
                     linebreak_behavior: BreakLineOn::WordBoundary,
                 },
                 ..default()
-            });
+            })
+            .insert(component::BlockButtonText);
         });
         parent.spawn(ButtonBundle {
             style: Style {
                 width: Val::Px(100.0),
-                height: Val::Px(50.0),
+                height: Val::Px(80.0),
                 border: UiRect::all(Val::Px(5.0)),
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
@@ -629,6 +732,65 @@ pub fn setup_combat(
             });
         });
     });
+}
+
+pub fn open_door_buttons(
+    mut open_button_query: Query<(&mut Interaction, &mut BackgroundColor), (With<component::OpenButton>, Without<component::CloseButton>)>,
+    mut close_button_query: Query<(&mut Interaction, &mut BackgroundColor), (With<component::CloseButton>, Without<component::OpenButton>)>,
+    mouse_button: Res<Input<MouseButton>>,
+    mut open_event: EventWriter<OpenDoor>,
+    mut close_event: EventWriter<CloseDoor>,
+    ) {
+    for (interaction, mut color) in open_button_query.iter_mut() {
+        match *interaction {
+            Interaction::Pressed => {
+                if mouse_button.just_pressed(MouseButton::Left) {
+                    *color = BackgroundColor(Color::DARK_GRAY);
+                    open_event.send(OpenDoor);
+                }
+            }
+            Interaction::Hovered => {
+                *color = BackgroundColor(Color::GRAY);
+            }
+            Interaction::None => {
+                *color = BackgroundColor(Color::DARK_GRAY);
+            }
+        }
+    }
+    for (interaction, mut color) in close_button_query.iter_mut() {
+        match *interaction {
+            Interaction::Pressed => {
+                if mouse_button.just_pressed(MouseButton::Left) {
+                    *color = BackgroundColor(Color::DARK_GRAY);
+                    close_event.send(CloseDoor);
+                }
+            }
+            Interaction::Hovered => {
+                *color = BackgroundColor(Color::GRAY);
+            }
+            Interaction::None => {
+                *color = BackgroundColor(Color::DARK_GRAY);
+            }
+        }
+    }
+}
+
+pub fn update_combat(
+    player_query: Query<(&component::Attack, &component::Fireball, &component::IceSpear, &component::Shock), With<component::Player>>,
+    mut attack_button_query: Query<&mut Text, (With<component::AttackButtonText>, Without<component::FireballButtonText>, Without<component::IceSpearButtonText>, Without<component::ShockButtonText>)>,
+    mut fireball_button_query: Query<&mut Text, (With<component::FireballButtonText>, Without<component::AttackButtonText>, Without<component::IceSpearButtonText>, Without<component::ShockButtonText>)>,
+    mut ice_spear_button_query: Query<&mut Text, (With<component::IceSpearButtonText>, Without<component::AttackButtonText>, Without<component::FireballButtonText>, Without<component::ShockButtonText>)>,
+    mut shock_button_query: Query<&mut Text, (With<component::ShockButtonText>, Without<component::AttackButtonText>, Without<component::FireballButtonText>, Without<component::IceSpearButtonText>)>,
+    ) {
+    let (attack, fireball, ice_spear, shock) = player_query.single();
+    let mut attack_button = attack_button_query.single_mut();
+    let mut fireball_button = fireball_button_query.single_mut();
+    let mut ice_spear_button = ice_spear_button_query.single_mut();
+    let mut shock_button = shock_button_query.single_mut();
+    attack_button.sections[0].value = format!("ATTACK\n{} damage: {}", attack.damage_type, attack.damage);
+    fireball_button.sections[0].value = format!("FIREBALL\nMana Cost: {}\nDamage: {}", fireball.mana_cost, fireball.damage);
+    ice_spear_button.sections[0].value = format!("ICE SPEAR\nMana Cost: {}\nDamage: {}", ice_spear.mana_cost, ice_spear.damage);
+    shock_button.sections[0].value = format!("SHOCK\nMana Cost: {}\nDamage: {}", shock.mana_cost, shock.damage);
 }
 
 pub fn show_combat(
@@ -737,108 +899,6 @@ pub fn setup_monster_actions(
     component::CombatUi,
     component::Icon));
 
-    texture_handle = asset_server.load("fireicon.png");
-    texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(100.0, 100.0), 1, 1, None, None);
-    texture_atlas_handle = texture_atlases.add(texture_atlas);
-
-    commands.spawn((SpriteSheetBundle {
-        texture_atlas: texture_atlas_handle,
-        transform: Transform {
-            translation: position,
-            ..default()
-        },
-        visibility: Visibility::Hidden,
-        ..default()
-    },
-    component::FireIcon,
-    component::CombatUi,
-    component::Icon));
-
-    texture_handle = asset_server.load("iceicon.png");
-    texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(100.0, 100.0), 1, 1, None, None);
-    texture_atlas_handle = texture_atlases.add(texture_atlas);
-
-    commands.spawn((SpriteSheetBundle {
-        texture_atlas: texture_atlas_handle,
-        transform: Transform {
-            translation: position,
-            ..default()
-        },
-        visibility: Visibility::Hidden,
-        ..default()
-    },
-    component::IceIcon,
-    component::CombatUi,
-    component::Icon));
-
-    texture_handle = asset_server.load("lightningicon.png");
-    texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(100.0, 100.0), 1, 1, None, None);
-    texture_atlas_handle = texture_atlases.add(texture_atlas);
-
-    commands.spawn((SpriteSheetBundle {
-        texture_atlas: texture_atlas_handle,
-        transform: Transform {
-            translation: position,
-            ..default()
-        },
-        visibility: Visibility::Hidden,
-        ..default()
-    },
-    component::LightningIcon,
-    component::CombatUi,
-    component::Icon));
-
-    texture_handle = asset_server.load("poisonicon.png");
-    texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(100.0, 100.0), 1, 1, None, None);
-    texture_atlas_handle = texture_atlases.add(texture_atlas);
-
-    commands.spawn((SpriteSheetBundle {
-        texture_atlas: texture_atlas_handle,
-        transform: Transform {
-            translation: position,
-            ..default()
-        },
-        visibility: Visibility::Hidden,
-        ..default()
-    },
-    component::PoisonIcon,
-    component::CombatUi,
-    component::Icon));
-
-    texture_handle = asset_server.load("darkicon.png");
-    texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(100.0, 100.0), 1, 1, None, None);
-    texture_atlas_handle = texture_atlases.add(texture_atlas);
-
-    commands.spawn((SpriteSheetBundle {
-        texture_atlas: texture_atlas_handle,
-        transform: Transform {
-            translation: position,
-            ..default()
-        },
-        visibility: Visibility::Hidden,
-        ..default()
-    },
-    component::DarkIcon,
-    component::CombatUi,
-    component::Icon));
-
-    texture_handle = asset_server.load("lighticon.png");
-    texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(100.0, 100.0), 1, 1, None, None);
-    texture_atlas_handle = texture_atlases.add(texture_atlas);
-
-    commands.spawn((SpriteSheetBundle {
-        texture_atlas: texture_atlas_handle,
-        transform: Transform {
-            translation: position,
-            ..default()
-        },
-        visibility: Visibility::Hidden,
-        ..default()
-    },
-    component::LightIcon,
-    component::CombatUi,
-    component::Icon));
-
     texture_handle = asset_server.load("waiticon.png");
     texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(100.0, 100.0), 1, 1, None, None);
     texture_atlas_handle = texture_atlases.add(texture_atlas);
@@ -876,12 +936,12 @@ pub fn setup_monster_actions(
 
 pub fn update_player_stats(
     mut text_query: Query<&mut Text, With<component::PlayerStatsText>>,
-    player_query: Query<(&component::Health, &component::Armor, &component::Resistance), With<component::Player>>,
+    player_query: Query<(&component::Health, &component::Mana, &component::Armor, &component::Resistance), With<component::Player>>,
     ) {
-    let (health, armor, resistances) = player_query.single();
+    let (health, mana, armor, resistances) = player_query.single();
     let mut text = text_query.single_mut();
-    let stats_string = format!("Health: {}\nArmor: {}\n\nResistances:\nPhysical: {}\nMagic: {}\nFire: {}\nIce: {}\nPoison: {}\nLightning: {}\nDark: {}\nLight: {}", 
-                               health.current, armor.amount, resistances.amount.physical, resistances.amount.magic, resistances.amount.fire, resistances.amount.ice, resistances.amount.poison, resistances.amount.lightning, resistances.amount.dark, resistances.amount.light);
+    let stats_string = format!("Health: {}/{}\nMana: {}/{}\nArmor: {}\n\nResistances:\nMagic: {}\nFire: {}\nIce: {}\nPoison: {}\nLightning: {}\nDark: {}\nLight: {}", 
+                               health.current, health.max, mana.current, mana.max, armor.amount, resistances.amount.magic, resistances.amount.fire, resistances.amount.ice, resistances.amount.poison, resistances.amount.lightning, resistances.amount.dark, resistances.amount.light);
     text.sections[0].value = stats_string.to_string();
 }
 
@@ -896,16 +956,18 @@ pub fn update_monster_stats(
             continue;
         }
         let mut text = text_query.single_mut();
-    let stats_string = format!("{}\nHealth: {}\nArmor: {}\n\nDamage: {}\nDamageType:\n{}\n\nResistances:\nPhysical: {}\nMagic: {}\nFire: {}\nIce: {}\nPoison: {}\nLightning: {}\nDark: {}\nLight: {}", 
-                               name.name, health.current, armor.amount, attack.damage, attack.damage_type, resistances.amount.physical, resistances.amount.magic, resistances.amount.fire, resistances.amount.ice, resistances.amount.poison, resistances.amount.lightning, resistances.amount.dark, resistances.amount.light);
+    let stats_string = format!("{}\nHealth: {}/{}\nArmor: {}\n\nDamage: {}\nDamageType:\n{}\n\nResistances:\nMagic: {}\nFire: {}\nIce: {}\nPoison: {}\nLightning: {}\nDark: {}\nLight: {}", 
+                               name.name, health.current, health.max, armor.amount, attack.damage, attack.damage_type, resistances.amount.magic, resistances.amount.fire, resistances.amount.ice, resistances.amount.poison, resistances.amount.lightning, resistances.amount.dark, resistances.amount.light);
         text.sections[0].value = stats_string.to_string();
     }
 }
 
 pub fn navigation_buttons(
-    mut up_button_query: Query<(&Interaction, &mut BackgroundColor), (With<component::UpButton>, Without<component::DownButton>)>,
-    mut down_button_query: Query<(&Interaction, &mut BackgroundColor), (With<component::DownButton>, Without<component::UpButton>)>,
-    mut writer: EventWriter<SetFloor>,
+    mut up_button_query: Query<(&Interaction, &mut BackgroundColor), (With<component::UpButton>, Without<component::DownButton>, Without<component::GoButton>)>,
+    mut down_button_query: Query<(&Interaction, &mut BackgroundColor), (With<component::DownButton>, Without<component::UpButton>, Without<component::GoButton>)>,
+    mut go_button_query: Query<(&Interaction, &mut BackgroundColor), (With<component::GoButton>, Without<component::DownButton>, Without<component::UpButton>)>,
+    mut up_down_writer: EventWriter<SetFloor>,
+    mut go_writer: EventWriter<GoToFloor>,
     mouse_button: Res<Input<MouseButton>>,
     ) {
     for (interaction, mut color) in up_button_query.iter_mut() {
@@ -913,7 +975,7 @@ pub fn navigation_buttons(
             Interaction::Pressed => {
                 if mouse_button.just_pressed(MouseButton::Left) {
                     *color = BackgroundColor(DIRECTION_BUTTON_COLOR);
-                    writer.send(SetFloor(1));
+                    up_down_writer.send(SetFloor(1));
                 }
             }
             Interaction::Hovered => {
@@ -929,7 +991,7 @@ pub fn navigation_buttons(
             Interaction::Pressed => {
                 if mouse_button.just_pressed(MouseButton::Left) {
                     *color = BackgroundColor(DIRECTION_BUTTON_COLOR);
-                    writer.send(SetFloor(-1));
+                    up_down_writer.send(SetFloor(-1));
                 }
             }
             Interaction::Hovered => {
@@ -940,6 +1002,91 @@ pub fn navigation_buttons(
             }
         }
     }
+    for (interaction, mut color) in go_button_query.iter_mut() {
+        match *interaction {
+            Interaction::Pressed => {
+                if mouse_button.just_pressed(MouseButton::Left) {
+                    *color = BackgroundColor(GO_BUTTON_COLOR);
+                    go_writer.send(GoToFloor);
+                }
+            }
+            Interaction::Hovered => {
+                *color = BackgroundColor(GO_HIGHLIGHT_COLOR);
+            }
+            Interaction::None => {
+                *color = BackgroundColor(GO_BUTTON_COLOR);
+            }
+        }
+    }
+}
+
+pub fn show_reward(
+    mut box_query: Query<&mut Visibility, With<component::RewardUi>>,
+    ) {
+    for mut box_visibility in box_query.iter_mut() {
+        *box_visibility = Visibility::Visible;
+    }
+}
+
+pub fn hide_reward(
+    mut box_query: Query<&mut Visibility, With<component::RewardUi>>,
+    ) {
+    for mut box_visibility in box_query.iter_mut() {
+        *box_visibility = Visibility::Hidden;
+    }
+}
+
+pub fn setup_reward(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    ) {
+    let font_handle = asset_server.load("Evil-Empire.otf");
+    commands.spawn(NodeBundle {
+        style: Style {
+            position_type: PositionType::Absolute,
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            ..default()
+        },
+        visibility: Visibility::Hidden,
+        ..default()
+    })
+    .insert(component::RewardUi)
+    .with_children(|parent| {
+        parent.spawn(ButtonBundle {
+            style: Style {
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                border: UiRect::all(Val::Px(5.0)),
+                ..default()
+            },
+            border_color: BorderColor(Color::BLACK),
+            background_color: BackgroundColor(STATS_BACKGROUND_COLOR),
+            ..default()
+        })
+        .with_children(|builder| {
+            builder.spawn(TextBundle {
+                text: Text {
+                    sections: vec![
+                        TextSection {
+                            value: "You found a reward!".to_string(),
+                            style: TextStyle {
+                                font: font_handle.clone(),
+                                font_size: 40.0,
+                                color: Color::WHITE,
+                            },
+                        }],
+                        alignment: TextAlignment::Center,
+                        linebreak_behavior: BreakLineOn::WordBoundary,
+                },
+                ..default()
+            })
+            .insert(component::RewardText);
+        });
+    });
 }
 
 pub fn combat_buttons(
