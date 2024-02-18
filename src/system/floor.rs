@@ -78,21 +78,33 @@ pub fn up_down(
     ) {
     for (mut floor, mut text) in query.iter_mut() {
         for event in reader.read() {
+            if event.0 > 0 {
+                commands.spawn(
+                    AudioBundle{
+                        source: asset_server.load("beepup.ogg"),
+                        settings: PlaybackSettings{
+                            mode: PlaybackMode::Despawn,
+                            ..default()
+                        },
+                        ..default()
+                    });
+            } else {
+                commands.spawn(
+                    AudioBundle{
+                        source: asset_server.load("beepdown.ogg"),
+                        settings: PlaybackSettings{
+                            mode: PlaybackMode::Despawn,
+                            ..default()
+                        },
+                        ..default()
+                    });
+            }
             floor.current += event.0;
             floor.current = floor.current.clamp(0, 10);
         }
         for _ in go_reader.read() {
             let mut door_visibility = door_query.single_mut();
             *door_visibility = Visibility::Visible;
-            commands.spawn(
-                AudioBundle{
-                    source: asset_server.load("teleport.ogg"),
-                    settings: PlaybackSettings{
-                        mode: PlaybackMode::Once,
-                        ..default()
-                    },
-                    ..default()
-                });
             app_state.set(AppState::MoveFloor);
         }
         let mut floor_text = floor.current.to_string();
@@ -104,6 +116,8 @@ pub fn up_down(
 }
 
 pub fn move_floors(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
     mut app_state: ResMut<NextState<AppState>>,
     time: Res<Time>,
     mut visualizer_query: Query<(&mut component::Floor, &mut component::Timer, &mut Text), (With<FloorVisualizer>, Without<FloorSelector>)>,
@@ -120,6 +134,15 @@ pub fn move_floors(
             if floor.current == 0 {
                 floor_text = "G".to_string();
             }
+                commands.spawn(
+                    AudioBundle{
+                        source: asset_server.load("elevatormove.ogg"),
+                        settings: PlaybackSettings{
+                            mode: PlaybackMode::Despawn,
+                            ..default()
+                        },
+                        ..default()
+                    });
             text.sections[0].value = floor_text;
             timer.duration = ELEVATOR_SPEED;
         } else if selector.current < floor.current {
@@ -128,6 +151,15 @@ pub fn move_floors(
             if floor.current == 0 {
                 floor_text = "G".to_string();
             }
+                commands.spawn(
+                    AudioBundle{
+                        source: asset_server.load("elevatormove.ogg"),
+                        settings: PlaybackSettings{
+                            mode: PlaybackMode::Despawn,
+                            ..default()
+                        },
+                        ..default()
+                    });
             text.sections[0].value = floor_text;
             timer.duration = ELEVATOR_SPEED;
         } else {
@@ -160,15 +192,15 @@ pub fn open_door(
         }
     }
     for _ in open_event.read() {
-        commands.spawn(
-            AudioBundle{
-                source: asset_server.load("teleport.ogg"),
-                settings: PlaybackSettings{
-                    mode: PlaybackMode::Once,
-                    ..default()
-                },
-                ..default()
-            });
+                commands.spawn(
+                    AudioBundle{
+                        source: asset_server.load("dooropen.ogg"),
+                        settings: PlaybackSettings{
+                            mode: PlaybackMode::Despawn,
+                            ..default()
+                        },
+                        ..default()
+                    });
         if monster_alive {
             app_state.set(AppState::Combat);
         } else {
@@ -176,15 +208,6 @@ pub fn open_door(
         }
     }
     for _ in close_event.read() {
-        commands.spawn(
-            AudioBundle{
-                source: asset_server.load("teleport.ogg"),
-                settings: PlaybackSettings{
-                    mode: PlaybackMode::Once,
-                    ..default()
-                },
-                ..default()
-            });
         app_state.set(AppState::SelectFloor);
     }
 }

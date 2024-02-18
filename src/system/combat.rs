@@ -1,3 +1,4 @@
+use bevy::audio::PlaybackMode;
 use bevy::prelude::*;
 use std::fmt;
 use rand::Rng;
@@ -125,9 +126,10 @@ pub fn exit_combat(
 
 pub fn combat(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
     mut app_state: ResMut<NextState<AppState>>,
     text_query: Query<&component::Floor, (With<Text>, Without<component::Monster>)>,
-    mut monster_query: Query<(Entity, &mut TextureAtlasSprite, &component::Name, &mut component::Health, &component::Armor, &component::Attack, &component::Resistance, &component::Floor, &mut component::NextAction), (With<component::Monster>, Without<component::Player>)>,
+    mut monster_query: Query<(Entity, &mut TextureAtlasSprite, &mut component::Health, &component::Armor, &component::Attack, &component::Resistance, &component::Floor, &mut component::NextAction), (With<component::Monster>, Without<component::Player>)>,
     mut player_query: Query<(&mut component::Health, &mut component::Mana, &component::Armor, &component::Attack, &component::Fireball, &component::IceSpear, &component::Shock, &component::Resistance), (With<component::Player>, Without<component::Monster>)>,
     mut action_query: Query<(&mut Visibility, Option<&component::PhysicalIcon>, Option<&component::WaitIcon>, Option<&component::DefendIcon>), With<component::Icon>>,
     mut reader: EventReader<ActionEvent>,
@@ -135,7 +137,7 @@ pub fn combat(
     let mut rng = rand::thread_rng(); 
     for floor in text_query.iter() {
         for (mut player_health, mut player_mana, player_armor, player_attack, player_fireball, player_icespear, player_shock, player_resisitance) in player_query.iter_mut() {
-            for (monster_entity, mut monster_sprite, monster_name, mut monster_health, monster_armor, monster_attack, monster_resistance, monster_floor, mut monster_action) in monster_query.iter_mut() {
+            for (monster_entity, mut monster_sprite, mut monster_health, monster_armor, monster_attack, monster_resistance, monster_floor, mut monster_action) in monster_query.iter_mut() {
                 if monster_floor.current != floor.current {
                     continue;
                 }
@@ -160,6 +162,15 @@ pub fn combat(
                                 app_state.set(AppState::PostCombat);
                             }
                             monster_sprite.color = Color::RED;
+                            commands.spawn(
+                                AudioBundle{
+                                    source: asset_server.load("attack.ogg"),
+                                    settings: PlaybackSettings{
+                                        mode: PlaybackMode::Despawn,
+                                        ..default()
+                                    },
+                                    ..default()
+                                });
                         }
                         ActionType::Fireball => {
                             if player_mana.current >= player_fireball.mana_cost {
@@ -170,7 +181,15 @@ pub fn combat(
                                     app_state.set(AppState::PostCombat);
                                 }
                                 monster_sprite.color = Color::RED;
-                            } else {
+                            commands.spawn(
+                                AudioBundle{
+                                    source: asset_server.load("fire.ogg"),
+                                    settings: PlaybackSettings{
+                                        mode: PlaybackMode::Despawn,
+                                        ..default()
+                                    },
+                                    ..default()
+                                });
                             }
                         }
                         ActionType::IceSpear => {
@@ -182,7 +201,15 @@ pub fn combat(
                                     app_state.set(AppState::PostCombat);
                                 }
                                 monster_sprite.color = Color::RED;
-                            } else {
+                            commands.spawn(
+                                AudioBundle{
+                                    source: asset_server.load("ice.ogg"),
+                                    settings: PlaybackSettings{
+                                        mode: PlaybackMode::Despawn,
+                                        ..default()
+                                    },
+                                    ..default()
+                                });
                             }
                         }
                         ActionType::Shock => {
@@ -194,7 +221,15 @@ pub fn combat(
                                     app_state.set(AppState::PostCombat);
                                 }
                                 monster_sprite.color = Color::RED;
-                            } else {
+                                commands.spawn(
+                                    AudioBundle{
+                                        source: asset_server.load("thunder.ogg"),
+                                        settings: PlaybackSettings{
+                                            mode: PlaybackMode::Despawn,
+                                            ..default()
+                                        },
+                                        ..default()
+                                    });
                             }
                         }
                         ActionType::Defend => {
@@ -253,6 +288,8 @@ pub fn combat(
 }
 
 pub fn post_combat(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
     mouse_button: Res<Input<MouseButton>>,
     mut app_state: ResMut<NextState<AppState>>,
     mut door_query: Query<&mut Visibility, (With<component::Door>, Without<component::Monster>)>,
@@ -282,6 +319,15 @@ pub fn post_combat(
 
         let mut door_visibility = door_query.single_mut();
         *door_visibility = Visibility::Visible;
+        commands.spawn(
+            AudioBundle{
+                source: asset_server.load("doorshut.ogg"),
+                settings: PlaybackSettings{
+                    mode: PlaybackMode::Despawn,
+                    ..default()
+                },
+                ..default()
+            });
     }
 }
 
