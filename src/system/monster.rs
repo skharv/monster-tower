@@ -159,7 +159,7 @@ pub fn get_monster_details(index : i32) -> Monster {
             sprite_size: Vec2::new(600., 600.),
             health: 100,
             attack: Attack {
-                damage: 100,
+                damage: 15,
                 damage_type: DamageType::Dark,
             },
             armor: 50,
